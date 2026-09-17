@@ -9,8 +9,10 @@ export class ServiceError extends Error {
   constructor(message: string, cause?: SupabaseError) {
     super(message)
     this.name = 'ServiceError'
-    if (cause && typeof cause === 'object' && 'code' in cause) this.code = cause.code
-    if (cause && typeof cause === 'object' && 'details' in cause) this.details = cause.details
+    if (cause && typeof cause === 'object' && 'code' in cause)
+      this.code = cause.code
+    if (cause && typeof cause === 'object' && 'details' in cause)
+      this.details = cause.details
     this.cause = cause ?? undefined
   }
 }

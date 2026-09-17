@@ -12,7 +12,9 @@ export interface AgentInput {
   active: boolean
 }
 
-export async function listAgents(options?: { activeOnly?: boolean }): Promise<Profile[]> {
+export async function listAgents(options?: {
+  activeOnly?: boolean
+}): Promise<Profile[]> {
   let query = supabase.from('profiles').select('*').order('full_name')
   if (options?.activeOnly) query = query.eq('active', true)
   const { data, error } = await query
@@ -21,7 +23,11 @@ export async function listAgents(options?: { activeOnly?: boolean }): Promise<Pr
 }
 
 export async function getAgent(id: string): Promise<Profile> {
-  const { data, error } = await supabase.from('profiles').select('*').eq('id', id).single()
+  const { data, error } = await supabase
+    .from('profiles')
+    .select('*')
+    .eq('id', id)
+    .single()
   throwIfError(error, 'The agent could not be loaded.')
   if (!data) throw new ServiceError('The agent could not be loaded.')
   return data
@@ -43,7 +49,10 @@ export async function createAgent(input: AgentInput): Promise<Profile> {
   return data
 }
 
-export async function updateAgent(id: string, input: Partial<AgentInput>): Promise<Profile> {
+export async function updateAgent(
+  id: string,
+  input: Partial<AgentInput>,
+): Promise<Profile> {
   const { id: _id, ...update } = input
   const { data, error } = await supabase
     .from('profiles')
@@ -56,11 +65,18 @@ export async function updateAgent(id: string, input: Partial<AgentInput>): Promi
   return data
 }
 
-export async function setAgentActive(id: string, active: boolean): Promise<Profile> {
+export async function setAgentActive(
+  id: string,
+  active: boolean,
+): Promise<Profile> {
   return updateAgent(id, { active })
 }
 
-export async function inviteAgent(input: Pick<AgentInput, 'full_name' | 'email' | 'phone' | 'role'>): Promise<void> {
-  const { error } = await supabase.functions.invoke('invite-agent', { body: input })
+export async function inviteAgent(
+  input: Pick<AgentInput, 'full_name' | 'email' | 'phone' | 'role'>,
+): Promise<void> {
+  const { error } = await supabase.functions.invoke('invite-agent', {
+    body: input,
+  })
   throwIfError(error, 'The agent invitation could not be sent.')
 }

@@ -10,11 +10,11 @@ development. A missing `VITE_SUPABASE_URL` in production silently resolves to
 
 Copy `.env.example` to `.env`. Never add a secret or service-role key here.
 
-| Variable                    | Purpose                                                        | Example                                                |
-| --------------------------- | -------------------------------------------------------------- | ------------------------------------------------------ |
-| `VITE_SUPABASE_URL`         | Supabase project API URL                                       | `https://yourproject.supabase.co`                      |
-| `VITE_SUPABASE_ANON_KEY`    | Publishable client key (safe to expose)                       | `sb_publishable_...`                                   |
-| `VITE_SITE_URL`             | Canonical origin used for absolute URLs and SEO metadata      | `https://www.havenandkey.com`                          |
+| Variable                 | Purpose                                                  | Example                           |
+| ------------------------ | -------------------------------------------------------- | --------------------------------- |
+| `VITE_SUPABASE_URL`      | Supabase project API URL                                 | `https://yourproject.supabase.co` |
+| `VITE_SUPABASE_ANON_KEY` | Publishable client key (safe to expose)                  | `sb_publishable_...`              |
+| `VITE_SITE_URL`          | Canonical origin used for absolute URLs and SEO metadata | `https://www.havenandkey.com`     |
 
 `.env` and `.env.*` are git-ignored; `.env.example` is committed.
 
@@ -24,11 +24,11 @@ The CLI stores these in the encrypted `supabase/.env.local` file, which is
 git-ignored. They are used for migrations, `db push`, and Edge Function
 deployment.
 
-| Variable                       | Purpose                                                        |
-| ------------------------------ | -------------------------------------------------------------- |
-| `SUPABASE_ACCESS_TOKEN`        | `supabase login` session token                                 |
-| `SUPABASE_DB_PASSWORD`         | Remote database password for `supabase db push` / `db dump`   |
-| `SUPABASE_PROJECT_REF`         | Project reference for `supabase link`                          |
+| Variable                | Purpose                                                     |
+| ----------------------- | ----------------------------------------------------------- |
+| `SUPABASE_ACCESS_TOKEN` | `supabase login` session token                              |
+| `SUPABASE_DB_PASSWORD`  | Remote database password for `supabase db push` / `db dump` |
+| `SUPABASE_PROJECT_REF`  | Project reference for `supabase link`                       |
 
 ## Edge Function secrets
 
@@ -88,6 +88,8 @@ variables are missing:
 ```ts
 // src/lib/env.ts (optional hardening)
 if (import.meta.env.PROD && !env.isSupabaseConfigured) {
-  throw new Error('VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY are required in production.')
+  throw new Error(
+    'VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY are required in production.',
+  )
 }
 ```

@@ -71,7 +71,10 @@ export function initials(name: string): string {
     .join('')
 }
 
-export function pageNumbers(current: number, total: number): Array<number | 'ellipsis'> {
+export function pageNumbers(
+  current: number,
+  total: number,
+): Array<number | 'ellipsis'> {
   if (total <= 7) return Array.from({ length: total }, (_, index) => index + 1)
 
   const pages: Array<number | 'ellipsis'> = [1]

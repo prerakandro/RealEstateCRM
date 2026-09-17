@@ -48,7 +48,9 @@ export async function searchPublicProperties(
   }
 }
 
-export async function getFeaturedProperties(limit = 6): Promise<PropertySearchItem[]> {
+export async function getFeaturedProperties(
+  limit = 6,
+): Promise<PropertySearchItem[]> {
   const result = await searchPublicProperties({
     featured: true,
     page: 1,
@@ -57,7 +59,9 @@ export async function getFeaturedProperties(limit = 6): Promise<PropertySearchIt
   return result.data
 }
 
-export async function getPublicPropertyBySlug(slug: string): Promise<PropertyWithRelations> {
+export async function getPublicPropertyBySlug(
+  slug: string,
+): Promise<PropertyWithRelations> {
   const { data: property, error } = await supabase
     .from('properties')
     .select(publicPropertyColumns)
@@ -74,7 +78,11 @@ export async function getPublicPropertyBySlug(slug: string): Promise<PropertyWit
       .eq('property_id', property.id)
       .order('sort_order', { ascending: true }),
     property.agent_id
-      ? supabase.from('profiles').select('*').eq('id', property.agent_id).maybeSingle()
+      ? supabase
+          .from('profiles')
+          .select('*')
+          .eq('id', property.agent_id)
+          .maybeSingle()
       : Promise.resolve({ data: null, error: null }),
   ])
   throwIfError(imagesResult.error, 'Property images could not be loaded.')
@@ -135,7 +143,8 @@ export async function listStaffProperties(
   return {
     data: properties.map((property) => ({
       ...property,
-      primaryImage: images.find((image) => image.property_id === property.id) ?? null,
+      primaryImage:
+        images.find((image) => image.property_id === property.id) ?? null,
     })),
     page: filters.page,
     pageSize: filters.pageSize,
@@ -144,7 +153,9 @@ export async function listStaffProperties(
   }
 }
 
-export async function getStaffPropertyById(id: string): Promise<PropertyWithRelations> {
+export async function getStaffPropertyById(
+  id: string,
+): Promise<PropertyWithRelations> {
   const { data: property, error } = await supabase
     .from('properties')
     .select('*')
@@ -160,7 +171,11 @@ export async function getStaffPropertyById(id: string): Promise<PropertyWithRela
       .eq('property_id', property.id)
       .order('sort_order', { ascending: true }),
     property.agent_id
-      ? supabase.from('profiles').select('*').eq('id', property.agent_id).maybeSingle()
+      ? supabase
+          .from('profiles')
+          .select('*')
+          .eq('id', property.agent_id)
+          .maybeSingle()
       : Promise.resolve({ data: null, error: null }),
   ])
   throwIfError(imagesResult.error, 'Property images could not be loaded.')
@@ -184,7 +199,10 @@ export async function createProperty(input: PropertyInsert): Promise<Property> {
   return data
 }
 
-export async function updateProperty(id: string, input: PropertyUpdate): Promise<Property> {
+export async function updateProperty(
+  id: string,
+  input: PropertyUpdate,
+): Promise<Property> {
   const { data, error } = await supabase
     .from('properties')
     .update({ ...input, updated_at: new Date().toISOString() })
@@ -211,6 +229,9 @@ async function runLifecycle(
   return data
 }
 
-export const publishProperty = (id: string) => runLifecycle('publish_property', id)
-export const archiveProperty = (id: string) => runLifecycle('archive_property', id)
-export const restoreProperty = (id: string) => runLifecycle('restore_property', id)
+export const publishProperty = (id: string) =>
+  runLifecycle('publish_property', id)
+export const archiveProperty = (id: string) =>
+  runLifecycle('archive_property', id)
+export const restoreProperty = (id: string) =>
+  runLifecycle('restore_property', id)

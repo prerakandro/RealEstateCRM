@@ -50,12 +50,12 @@ in Postgres runs in the browser.
 Declared in `src/types/database.generated.ts` (manually authored; replace
 with `npm run supabase:types` once a linked schema exists).
 
-| Table             | Purpose                                                        |
-| ----------------- | -------------------------------------------------------------- |
-| `profiles`        | One row per Supabase Auth user; `role` = `admin` \| `agent`    |
-| `properties`      | Listings with slug, lifecycle status, price, address, agent   |
-| `property_images` | Ordered photo set per property; `storage_path` into bucket    |
-| `enquiries`       | Lead submissions with status pipeline and assignment          |
+| Table             | Purpose                                                     |
+| ----------------- | ----------------------------------------------------------- |
+| `profiles`        | One row per Supabase Auth user; `role` = `admin` \| `agent` |
+| `properties`      | Listings with slug, lifecycle status, price, address, agent |
+| `property_images` | Ordered photo set per property; `storage_path` into bucket  |
+| `enquiries`       | Lead submissions with status pipeline and assignment        |
 
 RPCs the frontend depends on: `search_properties`,
 `reserve_property_image`, `set_primary_property_image`,

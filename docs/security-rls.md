@@ -6,11 +6,11 @@ specification for SQL that does not yet exist — see
 
 ## Roles
 
-| Role          | Meaning                                                        |
-| ------------- | -------------------------------------------------------------- |
-| `anon`        | Unauthenticated visitor; public listing read only             |
-| `authenticated` | Signed-in user; scoped by RLS to their own data            |
-| `service_role` | Server-side only; bypasses RLS. Never in the browser         |
+| Role            | Meaning                                              |
+| --------------- | ---------------------------------------------------- |
+| `anon`          | Unauthenticated visitor; public listing read only    |
+| `authenticated` | Signed-in user; scoped by RLS to their own data      |
+| `service_role`  | Server-side only; bypasses RLS. Never in the browser |
 
 `public.profile_role` is `admin | agent`. The `profiles.role` column decides
 staff permissions.
@@ -22,7 +22,11 @@ The browser gets only the anon (publishable) key:
 ```ts
 // src/lib/supabase.ts
 createClient<Database>(env.supabaseUrl, env.supabaseAnonKey, {
-  auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true },
+  auth: {
+    persistSession: true,
+    autoRefreshToken: true,
+    detectSessionInUrl: true,
+  },
 })
 ```
 
@@ -145,9 +149,13 @@ export default async function (req: Request) {
     return new Response('Unauthorized', { status: 401 })
   }
   const { email, role = 'agent' } = await req.json()
-  const supabase = createServerClient(Deno.env.get('SUPABASE_URL')!, Deno.env.get('SUPABASE_SECRET_KEYS')!, {
-    auth: { autoRefreshToken: false, persistSession: false },
-  })
+  const supabase = createServerClient(
+    Deno.env.get('SUPABASE_URL')!,
+    Deno.env.get('SUPABASE_SECRET_KEYS')!,
+    {
+      auth: { autoRefreshToken: false, persistSession: false },
+    },
+  )
   const { data, error } = await supabase.auth.admin.inviteUserByEmail(email, {
     redirectTo: Deno.env.get('SITE_URL')!,
   })

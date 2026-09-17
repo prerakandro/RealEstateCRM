@@ -1,37 +1,71 @@
 import type {
   Database,
   EnquiryStatus,
+  CustomerStatus,
+  CustomerType,
+  FollowUpStatus,
+  FollowUpType,
+  LeadPriority,
+  LeadSource,
+  LeadStatus,
   ListingType,
   ProfileRole,
   PropertySearchRow,
   PropertyStatus,
   PropertyType,
+  SiteVisitStatus,
 } from './database.generated'
 
 export type {
   Database,
   EnquiryStatus,
+  CustomerStatus,
+  CustomerType,
+  FollowUpStatus,
+  FollowUpType,
+  LeadPriority,
+  LeadSource,
+  LeadStatus,
   ListingType,
   ProfileRole,
   PropertySearchRow,
   PropertyStatus,
   PropertyType,
+  SiteVisitStatus,
 }
 
 export type Property = Database['public']['Tables']['properties']['Row']
-export type PropertyInsert = Database['public']['Tables']['properties']['Insert']
-export type PropertyUpdate = Database['public']['Tables']['properties']['Update']
-export type PropertyImage = Database['public']['Tables']['property_images']['Row']
+export type PropertyInsert =
+  Database['public']['Tables']['properties']['Insert']
+export type PropertyUpdate =
+  Database['public']['Tables']['properties']['Update']
+export type PropertyImage =
+  Database['public']['Tables']['property_images']['Row']
 export type Profile = Database['public']['Tables']['profiles']['Row']
 export type Enquiry = Database['public']['Tables']['enquiries']['Row']
 export type EnquiryInsert = Database['public']['Tables']['enquiries']['Insert']
+export type Customer = Database['public']['Tables']['customers']['Row']
+export type CustomerInsert = Database['public']['Tables']['customers']['Insert']
+export type Lead = Database['public']['Tables']['leads']['Row']
+export type LeadInsert = Database['public']['Tables']['leads']['Insert']
+export type FollowUp = Database['public']['Tables']['follow_ups']['Row']
+export type FollowUpInsert =
+  Database['public']['Tables']['follow_ups']['Insert']
+export type SiteVisit = Database['public']['Tables']['site_visits']['Row']
+export type SiteVisitInsert =
+  Database['public']['Tables']['site_visits']['Insert']
+export type Activity = Database['public']['Tables']['activities']['Row']
+export type Notification = Database['public']['Tables']['notifications']['Row']
 
 export interface PropertyWithRelations extends Property {
   property_images: PropertyImage[]
   agent: Profile | null
 }
 
-export interface PropertySearchItem extends Omit<PropertySearchRow, 'total_count'> {
+export interface PropertySearchItem extends Omit<
+  PropertySearchRow,
+  'total_count'
+> {
   image_url: string | null
 }
 
@@ -63,6 +97,17 @@ export interface DashboardStats {
   draftProperties: number
   newEnquiries: number
   activeAgents: number
+  totalCustomers: number
+  totalLeads: number
+  newLeads: number
+  qualifiedLeads: number
+  convertedLeads: number
+  lostLeads: number
+  pendingFollowUps: number
+  todayFollowUps: number
+  overdueFollowUps: number
+  upcomingSiteVisits: number
+  completedSiteVisits: number
 }
 
 export interface ServiceErrorShape {
@@ -99,9 +144,10 @@ export const PROPERTY_STATUSES: Array<{
   { value: 'archived', label: 'Archived' },
 ]
 
-export const ENQUIRY_STATUSES: Array<{ value: EnquiryStatus; label: string }> = [
-  { value: 'new', label: 'New' },
-  { value: 'contacted', label: 'Contacted' },
-  { value: 'qualified', label: 'Qualified' },
-  { value: 'closed', label: 'Closed' },
-]
+export const ENQUIRY_STATUSES: Array<{ value: EnquiryStatus; label: string }> =
+  [
+    { value: 'new', label: 'New' },
+    { value: 'contacted', label: 'Contacted' },
+    { value: 'qualified', label: 'Qualified' },
+    { value: 'closed', label: 'Closed' },
+  ]

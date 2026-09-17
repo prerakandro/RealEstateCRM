@@ -29,14 +29,14 @@ npm run supabase:start
 
 Services come up on these ports:
 
-| Service         | Port   | URL                                   |
-| --------------- | ------ | ------------------------------------- |
-| API             | 54321  | `http://127.0.0.1:54321`              |
-| Postgres        | 54322  | direct connection                     |
-| Studio          | 54323  | `http://127.0.0.1:54323`              |
-| Email inbox     | 54324  | `http://127.0.0.1:54324`              |
-| Edge Functions  | 54321  | served through the API                |
-| Analytics       | 54327  | `http://127.0.0.1:54327`              |
+| Service        | Port  | URL                      |
+| -------------- | ----- | ------------------------ |
+| API            | 54321 | `http://127.0.0.1:54321` |
+| Postgres       | 54322 | direct connection        |
+| Studio         | 54323 | `http://127.0.0.1:54323` |
+| Email inbox    | 54324 | `http://127.0.0.1:54324` |
+| Edge Functions | 54321 | served through the API   |
+| Analytics      | 54327 | `http://127.0.0.1:54327` |
 
 ## 3. Apply migrations and seed
 

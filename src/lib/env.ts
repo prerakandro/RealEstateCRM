@@ -9,7 +9,10 @@ const environmentSchema = z.object({
 const parsed = environmentSchema.safeParse(import.meta.env)
 
 if (!parsed.success && import.meta.env.DEV) {
-  console.warn('Some public environment variables are invalid.', parsed.error.flatten())
+  console.warn(
+    'Some public environment variables are invalid.',
+    parsed.error.flatten(),
+  )
 }
 
 const values = parsed.success ? parsed.data : {}

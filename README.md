@@ -21,15 +21,15 @@ for the current gap between declared types and deployed SQL.
 
 ## Tech stack
 
-| Layer        | Tool / Library                                   |
-| ------------ | ------------------------------------------------ |
-| Framework    | React 19, React Router DOM 7                     |
-| Build        | Vite 8, Tailwind CSS 4, `@tailwindcss/vite`      |
-| Language     | TypeScript 6, Zod 4, Oxlint                      |
-| Testing      | Vitest 5 (unit), Playwright 1.63 + axe-core (e2e) |
-| Backend      | Supabase (Postgres 17, Auth, Storage, Edge Functions) |
-| Deployment   | Vercel (SPA)                                     |
-| Styling      | Prettier 3 + prettier-plugin-tailwindcss         |
+| Layer      | Tool / Library                                        |
+| ---------- | ----------------------------------------------------- |
+| Framework  | React 19, React Router DOM 7                          |
+| Build      | Vite 8, Tailwind CSS 4, `@tailwindcss/vite`           |
+| Language   | TypeScript 6, Zod 4, Oxlint                           |
+| Testing    | Vitest 5 (unit), Playwright 1.63 + axe-core (e2e)     |
+| Backend    | Supabase (Postgres 17, Auth, Storage, Edge Functions) |
+| Deployment | Vercel (SPA)                                          |
+| Styling    | Prettier 3 + prettier-plugin-tailwindcss              |
 
 ## Quick start
 
@@ -54,21 +54,21 @@ The app serves at `http://localhost:5173`. Supabase Studio is available at
 
 ## Scripts
 
-| Script                 | What it does                                            |
-| ---------------------- | ------------------------------------------------------- |
-| `npm run dev`          | Vite dev server with HMR                                |
-| `npm run build`        | `tsc -b && vite build`                                  |
-| `npm run preview`      | Serve the production build locally                      |
-| `npm run typecheck`    | TypeScript project references                            |
-| `npm run lint`         | Oxlint                                                  |
-| `npm run format:check` | Prettier check                                          |
-| `npm run test`         | `vitest run`                                            |
-| `npm run test:coverage`| Vitest coverage report                                  |
-| `npm run test:e2e`     | `playwright test`                                       |
-| `npm run check`        | format + lint + typecheck + test + build (full gate)    |
-| `npm run supabase:start` / `:stop` / `:reset` | Local Supabase stack |
-| `npm run supabase:test`| `supabase test db` (pgTAP)                              |
-| `npm run supabase:types`| Generate `src/types/database.generated.ts`             |
+| Script                                        | What it does                                         |
+| --------------------------------------------- | ---------------------------------------------------- |
+| `npm run dev`                                 | Vite dev server with HMR                             |
+| `npm run build`                               | `tsc -b && vite build`                               |
+| `npm run preview`                             | Serve the production build locally                   |
+| `npm run typecheck`                           | TypeScript project references                        |
+| `npm run lint`                                | Oxlint                                               |
+| `npm run format:check`                        | Prettier check                                       |
+| `npm run test`                                | `vitest run`                                         |
+| `npm run test:coverage`                       | Vitest coverage report                               |
+| `npm run test:e2e`                            | `playwright test`                                    |
+| `npm run check`                               | format + lint + typecheck + test + build (full gate) |
+| `npm run supabase:start` / `:stop` / `:reset` | Local Supabase stack                                 |
+| `npm run supabase:test`                       | `supabase test db` (pgTAP)                           |
+| `npm run supabase:types`                      | Generate `src/types/database.generated.ts`           |
 
 ## Environment variables
 

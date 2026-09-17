@@ -27,15 +27,20 @@ function parseReservation(value: unknown): ReservedImageUpload | null {
 export function getPublicImageUrl(path: string | null): string | null {
   if (!path) return null
   if (/^https?:\/\//.test(path)) return path
-  return supabase.storage.from(PROPERTY_IMAGES_BUCKET).getPublicUrl(path).data.publicUrl
+  return supabase.storage.from(PROPERTY_IMAGES_BUCKET).getPublicUrl(path).data
+    .publicUrl
 }
 
-export async function getSignedImageUrl(path: string, expiresIn = 3600): Promise<string> {
+export async function getSignedImageUrl(
+  path: string,
+  expiresIn = 3600,
+): Promise<string> {
   const { data, error } = await supabase.storage
     .from(PROPERTY_IMAGES_BUCKET)
     .createSignedUrl(path, expiresIn)
   throwIfError(error, 'Unable to load the property image.')
-  if (!data?.signedUrl) throw new ServiceError('The image URL could not be created.')
+  if (!data?.signedUrl)
+    throw new ServiceError('The image URL could not be created.')
   return data.signedUrl
 }
 
@@ -109,11 +114,17 @@ export async function deletePropertyImage(image: PropertyImage): Promise<void> {
     .remove([image.storage_path])
   throwIfError(storageError, 'The image file could not be deleted.')
 
-  const { error } = await supabase.from('property_images').delete().eq('id', image.id)
+  const { error } = await supabase
+    .from('property_images')
+    .delete()
+    .eq('id', image.id)
   throwIfError(error, 'The image record could not be deleted.')
 }
 
-export async function setPrimaryImage(propertyId: string, imageId: string): Promise<void> {
+export async function setPrimaryImage(
+  propertyId: string,
+  imageId: string,
+): Promise<void> {
   const { error } = await supabase.rpc('set_primary_property_image', {
     p_property_id: propertyId,
     p_image_id: imageId,
@@ -121,7 +132,10 @@ export async function setPrimaryImage(propertyId: string, imageId: string): Prom
   throwIfError(error, 'The primary image could not be changed.')
 }
 
-export async function reorderImages(propertyId: string, imageIds: string[]): Promise<void> {
+export async function reorderImages(
+  propertyId: string,
+  imageIds: string[],
+): Promise<void> {
   const { error } = await supabase.rpc('reorder_property_images', {
     p_property_id: propertyId,
     p_image_ids: imageIds,

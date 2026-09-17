@@ -1,33 +1,1112 @@
 import { useEffect, useState, type FormEvent, type ReactNode } from 'react'
-import { BrowserRouter, Link, Navigate, Route, Routes, useNavigate, useParams, useSearchParams } from 'react-router-dom'
-import { Bath, BedDouble, ChevronRight, Home, MapPin, Menu, Search, X } from 'lucide-react'
+import {
+  BrowserRouter,
+  Link,
+  Navigate,
+  Route,
+  Routes,
+  useNavigate,
+  useParams,
+  useSearchParams,
+} from 'react-router-dom'
+import {
+  Bath,
+  BedDouble,
+  ChevronRight,
+  Home,
+  MapPin,
+  Menu,
+  Search,
+  X,
+} from 'lucide-react'
 import { Button } from '@/components/ui/Button'
-import { formatCurrency, getErrorMessage, slugify, titleCase } from '@/lib/utils'
+import {
+  formatCurrency,
+  formatDate,
+  getErrorMessage,
+  slugify,
+  titleCase,
+} from '@/lib/utils'
 import { getMyProfile, signIn, signOut, signUp } from '@/services/auth'
 import { createEnquiry } from '@/services/enquiries'
-import { createProperty, getFeaturedProperties, getPublicPropertyBySlug, listStaffProperties, searchPublicProperties } from '@/services/properties'
+import {
+  createProperty,
+  getFeaturedProperties,
+  getPublicPropertyBySlug,
+  listStaffProperties,
+  searchPublicProperties,
+} from '@/services/properties'
 import { getPublicImageUrl } from '@/services/storage'
 import { PropertyEditor } from '@/components/PropertyEditor'
 import { AgentsPage, EnquiriesPage } from '@/components/AdminOperations'
+import {
+  CustomersPage,
+  FollowUpsPage,
+  LeadsPage,
+  NotificationsPage,
+  SiteVisitsPage,
+} from '@/components/CRMOperations'
 import { getDashboardStats } from '@/services/dashboard'
-import type { Profile, PropertySearchItem, PropertyWithRelations } from '@/types/domain'
+import { listActivities } from '@/services/activities'
+import type {
+  Profile,
+  PropertySearchItem,
+  PropertyWithRelations,
+} from '@/types/domain'
 import { LISTING_TYPES, PROPERTY_TYPES } from '@/types/domain'
 import './App.css'
 
-export default function App() { return <BrowserRouter><Site /></BrowserRouter> }
-function Site() { const [profile,setProfile]=useState<Profile|null>(null); const [ready,setReady]=useState(false); useEffect(()=>{getMyProfile().then(setProfile).catch(()=>null).finally(()=>setReady(true))},[]); if(!ready)return <div className="page-center">Loading Haven & Key…</div>; return <Routes><Route path="/" element={<Public><HomePage/></Public>}/><Route path="/properties" element={<Public><Listings/></Public>}/><Route path="/properties/:slug" element={<Public><PropertyPage/></Public>}/><Route path="/login" element={<Login setProfile={setProfile}/>}/><Route path="/signup" element={<Signup/>}/><Route path="/dashboard" element={<Protected profile={profile}><CRM profile={profile!}><Dashboard/></CRM></Protected>}/><Route path="/crm/properties" element={<Protected profile={profile}><CRM profile={profile!}><Properties/></CRM></Protected>}/><Route path="/crm/properties/new" element={<Protected profile={profile}><CRM profile={profile!}><NewProperty profile={profile!}/></CRM></Protected>}/><Route path="/crm/properties/:id/edit" element={<Protected profile={profile}><CRM profile={profile!}><EditRoute profile={profile!}/></CRM></Protected>}/><Route path="/crm/agents" element={<Protected profile={profile}><CRM profile={profile!}><AgentsPage profile={profile!}/></CRM></Protected>}/><Route path="/crm/enquiries" element={<Protected profile={profile}><CRM profile={profile!}><EnquiriesPage/></CRM></Protected>}/><Route path="*" element={<Navigate to="/" replace/>}/></Routes> }
-function Public({children}:{children:ReactNode}){const[open,setOpen]=useState(false);const close=()=>setOpen(false);return <><header><div className="container-app nav"><Link className="brand" to="/"><i>H</i> Haven & Key</Link><button className="menu-toggle" onClick={()=>setOpen(!open)} aria-label="Toggle navigation" aria-expanded={open}>{open?<X/>:<Menu/>}</button><nav className={open?'menu-open':''}><Link onClick={close} to="/properties">Browse homes</Link><a onClick={close} href="/#about">Our approach</a><Link onClick={close} className="login-link" to="/login">Login</Link><Link onClick={close} className="outline-link" to="/signup">Sign up</Link></nav></div></header>{children}<footer><div className="container-app footer"><div><Link className="brand" to="/"><i>H</i> Haven & Key</Link><p>Thoughtful real estate for the way you want to live.</p></div><p>© {new Date().getFullYear()} Haven & Key Real Estate</p></div></footer></>}
-function HomePage(){const [homes,setHomes]=useState<PropertySearchItem[]>([]),[error,setError]=useState('');useEffect(()=>{getFeaturedProperties().then(setHomes).catch(e=>setError(getErrorMessage(e)))},[]);return <main><section className="hero"><div className="container-app hero-grid"><div><p className="eyebrow">A better way to move</p><h1>A home that feels <em>entirely yours.</em></h1><p className="lead">A considered collection of remarkable spaces, selected with care and matched with people who understand what home means.</p><SearchBox/><p className="tiny">✓ Verified listings &nbsp;&nbsp; · &nbsp;&nbsp; Local expertise</p></div><div className="hero-art"><span>Find your place<br/><em>in the world.</em></span></div></div></section><section className="container-app section"><div className="heading"><div><p className="eyebrow">Selected for you</p><h2>Homes worth coming home to.</h2></div><Link to="/properties">Explore all <ChevronRight/></Link></div>{error?<Notice text={error}/>:<Cards items={homes}/>}</section><section id="about" className="approach"><div className="container-app approach-grid"><div><p className="eyebrow">The Haven & Key way</p><h2>Less searching.<br/>More belonging.</h2></div><Step n="01" title="Tell us what matters" text="Share your lifestyle, wish list, and vision. We listen to the details."/><Step n="02" title="Discover with confidence" text="Thoughtful recommendations, straight answers, and guidance at every turn."/><Step n="03" title="Make it yours" text="From first viewing to keys in hand, the journey feels beautifully simple."/></div></section><section className="container-app cta"><div><p className="eyebrow">Your next chapter starts here</p><h2>Let’s find somewhere<br/><em>extraordinary.</em></h2></div><Link to="/properties"><Button size="lg">Start your search <ChevronRight size={17}/></Button></Link></section></main>}
-function Step({n,title,text}:{n:string;title:string;text:string}){return <div className="step"><b>{n}</b><h3>{title}</h3><p>{text}</p></div>}
-function SearchBox(){const nav=useNavigate(),[city,setCity]=useState(''),[listing,setListing]=useState('');function submit(e:FormEvent){e.preventDefault();nav(`/properties?city=${encodeURIComponent(city)}&listing=${listing}`)}return <form className="searchbox" onSubmit={submit}><label><small>Looking for</small><select value={listing} onChange={e=>setListing(e.target.value)}><option value="">Any listing</option>{LISTING_TYPES.map(x=><option key={x.value} value={x.value}>{x.label}</option>)}</select></label><label><small>Location</small><input value={city} onChange={e=>setCity(e.target.value)} placeholder="City or neighbourhood"/></label><Button type="submit" leftIcon={<Search size={16}/>}>Search homes</Button></form>}
-function Listings(){const[p,setP]=useSearchParams(),[items,setItems]=useState<PropertySearchItem[]>([]),[loading,setLoading]=useState(true),[error,setError]=useState(''),[totalPages,setTotalPages]=useState(1);const[query,setQuery]=useState(p.get('query')||''),[city,setCity]=useState(p.get('city')||''),[type,setType]=useState(p.get('type')||''),[listing,setListing]=useState(p.get('listing')||''),page=Number(p.get('page')||1);useEffect(()=>{setLoading(true);searchPublicProperties({query:p.get('query')||undefined,city:p.get('city')||undefined,propertyType:(p.get('type')||undefined) as never,listingType:(p.get('listing')||undefined) as never,page,pageSize:12}).then(x=>{setItems(x.data);setTotalPages(x.totalPages)}).catch(e=>setError(getErrorMessage(e))).finally(()=>setLoading(false))},[p,page]);function submit(e:FormEvent){e.preventDefault();const next=new URLSearchParams();if(query)next.set('query',query);if(city)next.set('city',city);if(type)next.set('type',type);if(listing)next.set('listing',listing);setP(next)}function go(nextPage:number){const next=new URLSearchParams(p);next.set('page',String(nextPage));setP(next)}return <main className="container-app listings"><p className="eyebrow">Available homes</p><h1>Find a place to belong.</h1><form className="filters" onSubmit={submit}><input placeholder="Search homes" value={query} onChange={e=>setQuery(e.target.value)}/><input placeholder="City" value={city} onChange={e=>setCity(e.target.value)}/><select value={type} onChange={e=>setType(e.target.value)}><option value="">All home types</option>{PROPERTY_TYPES.map(x=><option key={x.value} value={x.value}>{x.label}</option>)}</select><select value={listing} onChange={e=>setListing(e.target.value)}><option value="">Buy or rent</option>{LISTING_TYPES.map(x=><option key={x.value} value={x.value}>{x.label}</option>)}</select><Button type="submit">Apply filters</Button></form>{loading?<Loading/>:error?<Notice text={error}/>:items.length?<><Cards items={items}/>{totalPages>1&&<div className="pagination"><Button variant="secondary" disabled={page<=1} onClick={()=>go(page-1)}>Previous</Button><span>Page {page} of {totalPages}</span><Button variant="secondary" disabled={page>=totalPages} onClick={()=>go(page+1)}>Next</Button></div>}</>:<Empty title="No homes match those filters"/>}</main>}
-function Cards({items}:{items:PropertySearchItem[]}){return <div className="cards">{items.map(p=><article className="property" key={p.id}><Link className="property-image" to={`/properties/${p.slug}`}>{p.image_url?<img src={p.image_url} alt={p.primary_image_alt||p.title}/>:<div className="fallback"><Home/></div>}{p.featured&&<span>Featured</span>}</Link><div><p className="kind">{titleCase(p.property_type)} · {p.listing_type==='sale'?'For sale':'For rent'}</p><h3><Link to={`/properties/${p.slug}`}>{p.title}</Link></h3><strong>{formatCurrency(p.price,p.currency)}{p.listing_type==='rent'&&<small>/month</small>}</strong><p className="facts"><BedDouble/> {p.bedrooms} beds <Bath/> {p.bathrooms} baths {p.floor_area&&<> · {p.floor_area.toLocaleString()} sq ft</>}</p><p className="location"><MapPin/> {p.city}, {p.region}</p></div></article>)}</div>}
-function PropertyPage(){const{slug=''}=useParams(),[property,setProperty]=useState<PropertyWithRelations|null>(null),[error,setError]=useState(''),[sent,setSent]=useState(false),[sending,setSending]=useState(false);useEffect(()=>{getPublicPropertyBySlug(slug).then(setProperty).catch(e=>setError(getErrorMessage(e)))},[slug]);if(error)return <main className="container-app detail"><Empty title={error}/></main>;if(!property)return <Loading/>;const current=property,images=current.property_images;function submit(e:FormEvent<HTMLFormElement>){e.preventDefault();const f=new FormData(e.currentTarget);setSending(true);createEnquiry({property_id:current.id,name:String(f.get('name')),email:String(f.get('email')),phone:String(f.get('phone')||''),message:String(f.get('message'))}).then(()=>setSent(true)).catch(e=>setError(getErrorMessage(e))).finally(()=>setSending(false))}return <main className="container-app detail"><Link to="/properties" className="back">← Back to all homes</Link><div className="gallery">{images.length?images.slice(0,5).map((x,i)=><img key={x.id} className={i===0?'main-image':''} src={getPublicImageUrl(x.storage_path)||''} alt={x.alt_text||current.title}/>):<div className="fallback"><Home/></div>}</div><div className="detail-grid"><article><p className="kind">{titleCase(current.property_type)} · {current.listing_type==='sale'?'For sale':'For rent'}</p><h1>{current.title}</h1><strong className="price">{formatCurrency(current.price,current.currency)}</strong><p className="location"><MapPin/> {current.address_line_1}, {current.city}, {current.region}</p><div className="stats"><span><BedDouble/> {current.bedrooms} bedrooms</span><span><Bath/> {current.bathrooms} bathrooms</span><span>{current.floor_area||'—'} sq ft</span></div><h2>About this home</h2><p className="description">{current.description}</p></article><aside className="contact-card">{sent?<div className="success"><h2>Message sent.</h2><p>Thank you — a property advisor will be in touch shortly.</p></div>:<><p className="eyebrow">Interested?</p><h2>Arrange a viewing</h2><p>Speak with a local advisor about this home.</p><form onSubmit={submit}><input required name="name" placeholder="Your name"/><input required name="email" type="email" placeholder="Email address"/><input name="phone" placeholder="Phone number"/><textarea required name="message" defaultValue={`I'm interested in ${current.title}.`}/>{error&&<p className="error">{error}</p>}<Button loading={sending} className="full">Send enquiry</Button></form></>}</aside></div></main>}
-function Login({setProfile}:{setProfile:(p:Profile)=>void}){const nav=useNavigate(),[error,setError]=useState(''),[loading,setLoading]=useState(false);function submit(e:FormEvent<HTMLFormElement>){e.preventDefault();const f=new FormData(e.currentTarget);setLoading(true);signIn(String(f.get('email')),String(f.get('password'))).then(getMyProfile).then(p=>{if(!p)throw Error('Your account has no staff profile.');setProfile(p);nav('/dashboard')}).catch(e=>setError(getErrorMessage(e))).finally(()=>setLoading(false))}return <main className="login"><Link className="brand" to="/"><i>H</i> Haven & Key</Link><form onSubmit={submit}><p className="eyebrow">For the team</p><h1>Welcome back.</h1><p>Sign in to manage listings and enquiries.</p><input required name="email" type="email" placeholder="Email address"/><input required name="password" type="password" placeholder="Password"/>{error&&<p className="error">{error}</p>}<Button type="submit" loading={loading} className="full">Sign in</Button><p>New here? <Link to="/signup">Create an account</Link></p></form></main>}
-function Signup(){const nav=useNavigate(),[error,setError]=useState(''),[success,setSuccess]=useState(false),[loading,setLoading]=useState(false);function submit(e:FormEvent<HTMLFormElement>){e.preventDefault();const f=new FormData(e.currentTarget),password=String(f.get('password'));if(password.length<8){setError('Password must be at least 8 characters.');return}if(password!==String(f.get('confirm_password'))){setError('Passwords do not match.');return}setLoading(true);signUp(String(f.get('full_name')),String(f.get('email')),password).then(()=>{setSuccess(true);setTimeout(()=>nav('/login'),1200)}).catch(e=>setError(getErrorMessage(e))).finally(()=>setLoading(false))}return <main className="login"><Link className="brand" to="/"><i>H</i> Haven & Key</Link><form onSubmit={submit}><p className="eyebrow">Join the team</p><h1>Create account.</h1><p>{success?'Account created. Taking you to sign in…':'Use your email and a secure password.'}</p>{!success&&<><input required name="full_name" placeholder="Full name"/><input required name="email" type="email" placeholder="Email address"/><input required name="password" type="password" minLength={8} placeholder="Password (minimum 8 characters)"/><input required name="confirm_password" type="password" minLength={8} placeholder="Confirm password"/>{error&&<p className="error">{error}</p>}<Button type="submit" loading={loading} className="full">Create account</Button><p>Already have an account? <Link to="/login">Sign in</Link></p></>}</form></main>}
-function Protected({profile,children}:{profile:Profile|null;children:ReactNode}){return profile?children:<Navigate to="/login" replace/>}function CRM({profile,children}:{profile:Profile;children:ReactNode}){const nav=useNavigate();return <div className="crm"><aside><Link className="brand" to="/"><i>H</i> Haven & Key</Link><small>WORKSPACE</small><Link to="/dashboard">Overview</Link><Link to="/crm/properties">Properties</Link><Link to="/crm/properties/new">Add listing</Link><Link to="/crm/enquiries">Enquiries</Link><Link to="/crm/agents">Agents</Link><button onClick={()=>signOut().then(()=>nav('/login'))}>Sign out</button><p>{profile.full_name}<small>{profile.role}</small></p></aside><div className="crm-mobile-nav"><Link className="brand" to="/"><i>H</i> H&K</Link><Link to="/dashboard">Overview</Link><Link to="/crm/properties">Properties</Link><Link to="/crm/enquiries">Enquiries</Link><Link to="/crm/agents">Agents</Link><button onClick={()=>signOut().then(()=>nav('/login'))}>Logout</button></div><section>{children}</section></div>}
-function Dashboard(){const[stats,setStats]=useState<{totalProperties:number;publishedProperties:number;draftProperties:number;newEnquiries:number;activeAgents:number}|null>(null);useEffect(()=>{getDashboardStats().then(setStats).catch(()=>null)},[]);return <><div className="crm-head"><div><p className="eyebrow">Overview</p><h1>Good morning.</h1></div><Link to="/crm/properties/new"><Button>Add property</Button></Link></div><div className="stat-grid"><Stat title="All properties" value={String(stats?.totalProperties??'—')}/><Stat title="Published" value={String(stats?.publishedProperties??'—')}/><Stat title="Drafts" value={String(stats?.draftProperties??'—')}/><Stat title="New enquiries" value={String(stats?.newEnquiries??'—')}/><Stat title="Active agents" value={String(stats?.activeAgents??'—')}/></div></>}function Stat({title,value}:{title:string;value:string}){return <div className="stat"><p>{title}</p><strong>{value}</strong></div>}
-function Properties(){const[items,setItems]=useState<Awaited<ReturnType<typeof listStaffProperties>>['data']>([]),[error,setError]=useState('');useEffect(()=>{listStaffProperties({page:1,pageSize:50}).then(x=>setItems(x.data)).catch(e=>setError(getErrorMessage(e)))},[]);return <><div className="crm-head"><div><p className="eyebrow">Portfolio</p><h1>Properties</h1></div><Link to="/crm/properties/new"><Button>Add property</Button></Link></div>{error?<Notice text={error}/>:<div className="table"><table><thead><tr><th>Property</th><th>Location</th><th>Status</th><th>Price</th></tr></thead><tbody>{items.map(x=><tr key={x.id}><td><b><Link to={`/crm/properties/${x.id}/edit`}>{x.title}</Link></b><small>{titleCase(x.property_type)}</small></td><td>{x.city}, {x.region}</td><td><span className={x.status}>{x.status}</span></td><td>{formatCurrency(x.price,x.currency)}</td></tr>)}</tbody></table>{!items.length&&<Empty title="No properties yet"/>}</div>}</>}
-function EditRoute({profile}:{profile:Profile}){const {id}=useParams();return id?<PropertyEditor id={id} profile={profile}/>:<Empty title="Property not found"/>}
-function NewProperty({profile}:{profile:Profile}){const nav=useNavigate(),[error,setError]=useState(''),[loading,setLoading]=useState(false);function submit(e:FormEvent<HTMLFormElement>){e.preventDefault();const f=new FormData(e.currentTarget),title=String(f.get('title'));setLoading(true);createProperty({title,slug:slugify(title),description:String(f.get('description')),property_type:String(f.get('property_type')) as never,listing_type:String(f.get('listing_type')) as never,price:Number(f.get('price')),address_line_1:String(f.get('address')),city:String(f.get('city')),region:String(f.get('region')),bedrooms:Number(f.get('bedrooms')||0),bathrooms:Number(f.get('bathrooms')||0),created_by:profile.id,agent_id:profile.id}).then(()=>nav('/crm/properties')).catch(e=>setError(getErrorMessage(e))).finally(()=>setLoading(false))}return <><div className="crm-head"><div><p className="eyebrow">Portfolio</p><h1>Add a property</h1></div></div><form className="property-form" onSubmit={submit}><label>Property title<input required name="title"/></label><label>Description<textarea required name="description"/></label><div><label>Property type<select name="property_type">{PROPERTY_TYPES.map(x=><option key={x.value} value={x.value}>{x.label}</option>)}</select></label><label>Listing type<select name="listing_type">{LISTING_TYPES.map(x=><option key={x.value} value={x.value}>{x.label}</option>)}</select></label><label>Price<input required name="price" type="number" min="0"/></label><label>Bedrooms<input name="bedrooms" type="number" min="0" defaultValue="0"/></label><label>Bathrooms<input name="bathrooms" type="number" min="0" defaultValue="0"/></label><label>Address<input required name="address"/></label><label>City<input required name="city"/></label><label>State / region<input required name="region"/></label></div>{error&&<p className="error">{error}</p>}<Button type="submit" loading={loading}>Create draft property</Button></form></>}
-function Loading(){return <div className="loading">Loading…</div>}function Notice({text}:{text:string}){return <div className="notice">{text}</div>}function Empty({title}:{title:string}){return <div className="empty"><Home/><h2>{title}</h2><p>Try adjusting your search or check back soon.</p></div>}
+export default function App() {
+  return (
+    <BrowserRouter>
+      <Site />
+    </BrowserRouter>
+  )
+}
+function Site() {
+  const [profile, setProfile] = useState<Profile | null>(null)
+  const [ready, setReady] = useState(false)
+  useEffect(() => {
+    getMyProfile()
+      .then(setProfile)
+      .catch(() => null)
+      .finally(() => setReady(true))
+  }, [])
+  if (!ready) return <div className="page-center">Loading Haven & Key…</div>
+  return (
+    <Routes>
+      <Route
+        path="/"
+        element={
+          <Public>
+            <HomePage />
+          </Public>
+        }
+      />
+      <Route
+        path="/properties"
+        element={
+          <Public>
+            <Listings />
+          </Public>
+        }
+      />
+      <Route
+        path="/properties/:slug"
+        element={
+          <Public>
+            <PropertyPage />
+          </Public>
+        }
+      />
+      <Route path="/login" element={<Login setProfile={setProfile} />} />
+      <Route path="/signup" element={<Signup />} />
+      <Route
+        path="/dashboard"
+        element={
+          <Protected profile={profile}>
+            <CRM profile={profile!}>
+              <Dashboard />
+            </CRM>
+          </Protected>
+        }
+      />
+      <Route
+        path="/crm/properties"
+        element={
+          <Protected profile={profile}>
+            <CRM profile={profile!}>
+              <Properties />
+            </CRM>
+          </Protected>
+        }
+      />
+      <Route
+        path="/crm/properties/new"
+        element={
+          <Protected profile={profile}>
+            <CRM profile={profile!}>
+              <NewProperty profile={profile!} />
+            </CRM>
+          </Protected>
+        }
+      />
+      <Route
+        path="/crm/properties/:id/edit"
+        element={
+          <Protected profile={profile}>
+            <CRM profile={profile!}>
+              <EditRoute profile={profile!} />
+            </CRM>
+          </Protected>
+        }
+      />
+      <Route
+        path="/crm/agents"
+        element={
+          <Protected profile={profile}>
+            <CRM profile={profile!}>
+              <AgentsPage profile={profile!} />
+            </CRM>
+          </Protected>
+        }
+      />
+      <Route
+        path="/crm/enquiries"
+        element={
+          <Protected profile={profile}>
+            <CRM profile={profile!}>
+              <EnquiriesPage />
+            </CRM>
+          </Protected>
+        }
+      />
+      <Route
+        path="/crm/customers"
+        element={
+          <Protected profile={profile}>
+            <CRM profile={profile!}>
+              <CustomersPage profile={profile!} />
+            </CRM>
+          </Protected>
+        }
+      />
+      <Route
+        path="/crm/leads"
+        element={
+          <Protected profile={profile}>
+            <CRM profile={profile!}>
+              <LeadsPage profile={profile!} />
+            </CRM>
+          </Protected>
+        }
+      />
+      <Route
+        path="/crm/follow-ups"
+        element={
+          <Protected profile={profile}>
+            <CRM profile={profile!}>
+              <FollowUpsPage profile={profile!} />
+            </CRM>
+          </Protected>
+        }
+      />
+      <Route
+        path="/crm/site-visits"
+        element={
+          <Protected profile={profile}>
+            <CRM profile={profile!}>
+              <SiteVisitsPage profile={profile!} />
+            </CRM>
+          </Protected>
+        }
+      />
+      <Route
+        path="/crm/notifications"
+        element={
+          <Protected profile={profile}>
+            <CRM profile={profile!}>
+              <NotificationsPage profile={profile!} />
+            </CRM>
+          </Protected>
+        }
+      />
+      <Route path="*" element={<Navigate to="/" replace />} />
+    </Routes>
+  )
+}
+function Public({ children }: { children: ReactNode }) {
+  const [open, setOpen] = useState(false)
+  const close = () => setOpen(false)
+  return (
+    <>
+      <header>
+        <div className="container-app nav">
+          <Link className="brand" to="/">
+            <i>H</i> Haven & Key
+          </Link>
+          <button
+            className="menu-toggle"
+            onClick={() => setOpen(!open)}
+            aria-label="Toggle navigation"
+            aria-expanded={open}
+          >
+            {open ? <X /> : <Menu />}
+          </button>
+          <nav className={open ? 'menu-open' : ''}>
+            <Link onClick={close} to="/properties">
+              Browse homes
+            </Link>
+            <a onClick={close} href="/#about">
+              Our approach
+            </a>
+            <Link onClick={close} className="login-link" to="/login">
+              Login
+            </Link>
+            <Link onClick={close} className="outline-link" to="/signup">
+              Sign up
+            </Link>
+          </nav>
+        </div>
+      </header>
+      {children}
+      <footer>
+        <div className="container-app footer">
+          <div>
+            <Link className="brand" to="/">
+              <i>H</i> Haven & Key
+            </Link>
+            <p>Thoughtful real estate for the way you want to live.</p>
+          </div>
+          <p>© {new Date().getFullYear()} Haven & Key Real Estate</p>
+        </div>
+      </footer>
+    </>
+  )
+}
+function HomePage() {
+  const [homes, setHomes] = useState<PropertySearchItem[]>([]),
+    [error, setError] = useState('')
+  useEffect(() => {
+    getFeaturedProperties()
+      .then(setHomes)
+      .catch((e) => setError(getErrorMessage(e)))
+  }, [])
+  return (
+    <main>
+      <section className="hero">
+        <div className="container-app hero-grid">
+          <div>
+            <p className="eyebrow">A better way to move</p>
+            <h1>
+              A home that feels <em>entirely yours.</em>
+            </h1>
+            <p className="lead">
+              A considered collection of remarkable spaces, selected with care
+              and matched with people who understand what home means.
+            </p>
+            <SearchBox />
+            <p className="tiny">
+              ✓ Verified listings &nbsp;&nbsp; · &nbsp;&nbsp; Local expertise
+            </p>
+          </div>
+          <div className="hero-art">
+            <span>
+              Find your place
+              <br />
+              <em>in the world.</em>
+            </span>
+          </div>
+        </div>
+      </section>
+      <section className="container-app section">
+        <div className="heading">
+          <div>
+            <p className="eyebrow">Selected for you</p>
+            <h2>Homes worth coming home to.</h2>
+          </div>
+          <Link to="/properties">
+            Explore all <ChevronRight />
+          </Link>
+        </div>
+        {error ? <Notice text={error} /> : <Cards items={homes} />}
+      </section>
+      <section id="about" className="approach">
+        <div className="container-app approach-grid">
+          <div>
+            <p className="eyebrow">The Haven & Key way</p>
+            <h2>
+              Less searching.
+              <br />
+              More belonging.
+            </h2>
+          </div>
+          <Step
+            n="01"
+            title="Tell us what matters"
+            text="Share your lifestyle, wish list, and vision. We listen to the details."
+          />
+          <Step
+            n="02"
+            title="Discover with confidence"
+            text="Thoughtful recommendations, straight answers, and guidance at every turn."
+          />
+          <Step
+            n="03"
+            title="Make it yours"
+            text="From first viewing to keys in hand, the journey feels beautifully simple."
+          />
+        </div>
+      </section>
+      <section className="container-app cta">
+        <div>
+          <p className="eyebrow">Your next chapter starts here</p>
+          <h2>
+            Let’s find somewhere
+            <br />
+            <em>extraordinary.</em>
+          </h2>
+        </div>
+        <Link to="/properties">
+          <Button size="lg">
+            Start your search <ChevronRight size={17} />
+          </Button>
+        </Link>
+      </section>
+    </main>
+  )
+}
+function Step({ n, title, text }: { n: string; title: string; text: string }) {
+  return (
+    <div className="step">
+      <b>{n}</b>
+      <h3>{title}</h3>
+      <p>{text}</p>
+    </div>
+  )
+}
+function SearchBox() {
+  const nav = useNavigate(),
+    [city, setCity] = useState(''),
+    [listing, setListing] = useState('')
+  function submit(e: FormEvent) {
+    e.preventDefault()
+    nav(`/properties?city=${encodeURIComponent(city)}&listing=${listing}`)
+  }
+  return (
+    <form className="searchbox" onSubmit={submit}>
+      <label>
+        <small>Looking for</small>
+        <select value={listing} onChange={(e) => setListing(e.target.value)}>
+          <option value="">Any listing</option>
+          {LISTING_TYPES.map((x) => (
+            <option key={x.value} value={x.value}>
+              {x.label}
+            </option>
+          ))}
+        </select>
+      </label>
+      <label>
+        <small>Location</small>
+        <input
+          value={city}
+          onChange={(e) => setCity(e.target.value)}
+          placeholder="City or neighbourhood"
+        />
+      </label>
+      <Button type="submit" leftIcon={<Search size={16} />}>
+        Search homes
+      </Button>
+    </form>
+  )
+}
+function Listings() {
+  const [p, setP] = useSearchParams(),
+    [items, setItems] = useState<PropertySearchItem[]>([]),
+    [loading, setLoading] = useState(true),
+    [error, setError] = useState(''),
+    [totalPages, setTotalPages] = useState(1)
+  const [query, setQuery] = useState(p.get('query') || ''),
+    [city, setCity] = useState(p.get('city') || ''),
+    [type, setType] = useState(p.get('type') || ''),
+    [listing, setListing] = useState(p.get('listing') || ''),
+    page = Number(p.get('page') || 1)
+  useEffect(() => {
+    setLoading(true)
+    searchPublicProperties({
+      query: p.get('query') || undefined,
+      city: p.get('city') || undefined,
+      propertyType: (p.get('type') || undefined) as never,
+      listingType: (p.get('listing') || undefined) as never,
+      page,
+      pageSize: 12,
+    })
+      .then((x) => {
+        setItems(x.data)
+        setTotalPages(x.totalPages)
+      })
+      .catch((e) => setError(getErrorMessage(e)))
+      .finally(() => setLoading(false))
+  }, [p, page])
+  function submit(e: FormEvent) {
+    e.preventDefault()
+    const next = new URLSearchParams()
+    if (query) next.set('query', query)
+    if (city) next.set('city', city)
+    if (type) next.set('type', type)
+    if (listing) next.set('listing', listing)
+    setP(next)
+  }
+  function go(nextPage: number) {
+    const next = new URLSearchParams(p)
+    next.set('page', String(nextPage))
+    setP(next)
+  }
+  return (
+    <main className="container-app listings">
+      <p className="eyebrow">Available homes</p>
+      <h1>Find a place to belong.</h1>
+      <form className="filters" onSubmit={submit}>
+        <input
+          placeholder="Search homes"
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+        />
+        <input
+          placeholder="City"
+          value={city}
+          onChange={(e) => setCity(e.target.value)}
+        />
+        <select value={type} onChange={(e) => setType(e.target.value)}>
+          <option value="">All home types</option>
+          {PROPERTY_TYPES.map((x) => (
+            <option key={x.value} value={x.value}>
+              {x.label}
+            </option>
+          ))}
+        </select>
+        <select value={listing} onChange={(e) => setListing(e.target.value)}>
+          <option value="">Buy or rent</option>
+          {LISTING_TYPES.map((x) => (
+            <option key={x.value} value={x.value}>
+              {x.label}
+            </option>
+          ))}
+        </select>
+        <Button type="submit">Apply filters</Button>
+      </form>
+      {loading ? (
+        <Loading />
+      ) : error ? (
+        <Notice text={error} />
+      ) : items.length ? (
+        <>
+          <Cards items={items} />
+          {totalPages > 1 && (
+            <div className="pagination">
+              <Button
+                variant="secondary"
+                disabled={page <= 1}
+                onClick={() => go(page - 1)}
+              >
+                Previous
+              </Button>
+              <span>
+                Page {page} of {totalPages}
+              </span>
+              <Button
+                variant="secondary"
+                disabled={page >= totalPages}
+                onClick={() => go(page + 1)}
+              >
+                Next
+              </Button>
+            </div>
+          )}
+        </>
+      ) : (
+        <Empty title="No homes match those filters" />
+      )}
+    </main>
+  )
+}
+function Cards({ items }: { items: PropertySearchItem[] }) {
+  return (
+    <div className="cards">
+      {items.map((p) => (
+        <article className="property" key={p.id}>
+          <Link className="property-image" to={`/properties/${p.slug}`}>
+            {p.image_url ? (
+              <img src={p.image_url} alt={p.primary_image_alt || p.title} />
+            ) : (
+              <div className="fallback">
+                <Home />
+              </div>
+            )}
+            {p.featured && <span>Featured</span>}
+          </Link>
+          <div>
+            <p className="kind">
+              {titleCase(p.property_type)} ·{' '}
+              {p.listing_type === 'sale' ? 'For sale' : 'For rent'}
+            </p>
+            <h3>
+              <Link to={`/properties/${p.slug}`}>{p.title}</Link>
+            </h3>
+            <strong>
+              {formatCurrency(p.price, p.currency)}
+              {p.listing_type === 'rent' && <small>/month</small>}
+            </strong>
+            <p className="facts">
+              <BedDouble /> {p.bedrooms} beds <Bath /> {p.bathrooms} baths{' '}
+              {p.floor_area && <> · {p.floor_area.toLocaleString()} sq ft</>}
+            </p>
+            <p className="location">
+              <MapPin /> {p.city}, {p.region}
+            </p>
+          </div>
+        </article>
+      ))}
+    </div>
+  )
+}
+function PropertyPage() {
+  const { slug = '' } = useParams(),
+    [property, setProperty] = useState<PropertyWithRelations | null>(null),
+    [error, setError] = useState(''),
+    [sent, setSent] = useState(false),
+    [sending, setSending] = useState(false)
+  useEffect(() => {
+    getPublicPropertyBySlug(slug)
+      .then(setProperty)
+      .catch((e) => setError(getErrorMessage(e)))
+  }, [slug])
+  if (error)
+    return (
+      <main className="container-app detail">
+        <Empty title={error} />
+      </main>
+    )
+  if (!property) return <Loading />
+  const current = property,
+    images = current.property_images
+  function submit(e: FormEvent<HTMLFormElement>) {
+    e.preventDefault()
+    const f = new FormData(e.currentTarget)
+    setSending(true)
+    createEnquiry({
+      property_id: current.id,
+      name: String(f.get('name')),
+      email: String(f.get('email')),
+      phone: String(f.get('phone') || ''),
+      message: String(f.get('message')),
+    })
+      .then(() => setSent(true))
+      .catch((e) => setError(getErrorMessage(e)))
+      .finally(() => setSending(false))
+  }
+  return (
+    <main className="container-app detail">
+      <Link to="/properties" className="back">
+        ← Back to all homes
+      </Link>
+      <div className="gallery">
+        {images.length ? (
+          images
+            .slice(0, 5)
+            .map((x, i) => (
+              <img
+                key={x.id}
+                className={i === 0 ? 'main-image' : ''}
+                src={getPublicImageUrl(x.storage_path) || ''}
+                alt={x.alt_text || current.title}
+              />
+            ))
+        ) : (
+          <div className="fallback">
+            <Home />
+          </div>
+        )}
+      </div>
+      <div className="detail-grid">
+        <article>
+          <p className="kind">
+            {titleCase(current.property_type)} ·{' '}
+            {current.listing_type === 'sale' ? 'For sale' : 'For rent'}
+          </p>
+          <h1>{current.title}</h1>
+          <strong className="price">
+            {formatCurrency(current.price, current.currency)}
+          </strong>
+          <p className="location">
+            <MapPin /> {current.address_line_1}, {current.city},{' '}
+            {current.region}
+          </p>
+          <div className="stats">
+            <span>
+              <BedDouble /> {current.bedrooms} bedrooms
+            </span>
+            <span>
+              <Bath /> {current.bathrooms} bathrooms
+            </span>
+            <span>{current.floor_area || '—'} sq ft</span>
+          </div>
+          <h2>About this home</h2>
+          <p className="description">{current.description}</p>
+        </article>
+        <aside className="contact-card">
+          {sent ? (
+            <div className="success">
+              <h2>Message sent.</h2>
+              <p>Thank you — a property advisor will be in touch shortly.</p>
+            </div>
+          ) : (
+            <>
+              <p className="eyebrow">Interested?</p>
+              <h2>Arrange a viewing</h2>
+              <p>Speak with a local advisor about this home.</p>
+              <form onSubmit={submit}>
+                <input required name="name" placeholder="Your name" />
+                <input
+                  required
+                  name="email"
+                  type="email"
+                  placeholder="Email address"
+                />
+                <input name="phone" placeholder="Phone number" />
+                <textarea
+                  required
+                  name="message"
+                  defaultValue={`I'm interested in ${current.title}.`}
+                />
+                {error && <p className="error">{error}</p>}
+                <Button loading={sending} className="full">
+                  Send enquiry
+                </Button>
+              </form>
+            </>
+          )}
+        </aside>
+      </div>
+    </main>
+  )
+}
+function Login({ setProfile }: { setProfile: (p: Profile) => void }) {
+  const nav = useNavigate(),
+    [error, setError] = useState(''),
+    [loading, setLoading] = useState(false)
+  function submit(e: FormEvent<HTMLFormElement>) {
+    e.preventDefault()
+    const f = new FormData(e.currentTarget)
+    setLoading(true)
+    signIn(String(f.get('email')), String(f.get('password')))
+      .then(getMyProfile)
+      .then((p) => {
+        if (!p) throw Error('Your account has no staff profile.')
+        setProfile(p)
+        nav('/dashboard')
+      })
+      .catch((e) => setError(getErrorMessage(e)))
+      .finally(() => setLoading(false))
+  }
+  return (
+    <main className="login">
+      <Link className="brand" to="/">
+        <i>H</i> Haven & Key
+      </Link>
+      <form onSubmit={submit}>
+        <p className="eyebrow">For the team</p>
+        <h1>Welcome back.</h1>
+        <p>Sign in to manage listings and enquiries.</p>
+        <input required name="email" type="email" placeholder="Email address" />
+        <input
+          required
+          name="password"
+          type="password"
+          placeholder="Password"
+        />
+        {error && <p className="error">{error}</p>}
+        <Button type="submit" loading={loading} className="full">
+          Sign in
+        </Button>
+        <p>
+          New here? <Link to="/signup">Create an account</Link>
+        </p>
+      </form>
+    </main>
+  )
+}
+function Signup() {
+  const nav = useNavigate(),
+    [error, setError] = useState(''),
+    [success, setSuccess] = useState(false),
+    [loading, setLoading] = useState(false)
+  function submit(e: FormEvent<HTMLFormElement>) {
+    e.preventDefault()
+    const f = new FormData(e.currentTarget),
+      password = String(f.get('password'))
+    if (password.length < 8) {
+      setError('Password must be at least 8 characters.')
+      return
+    }
+    if (password !== String(f.get('confirm_password'))) {
+      setError('Passwords do not match.')
+      return
+    }
+    setLoading(true)
+    signUp(String(f.get('full_name')), String(f.get('email')), password)
+      .then(() => {
+        setSuccess(true)
+        setTimeout(() => nav('/login'), 1200)
+      })
+      .catch((e) => setError(getErrorMessage(e)))
+      .finally(() => setLoading(false))
+  }
+  return (
+    <main className="login">
+      <Link className="brand" to="/">
+        <i>H</i> Haven & Key
+      </Link>
+      <form onSubmit={submit}>
+        <p className="eyebrow">Join the team</p>
+        <h1>Create account.</h1>
+        <p>
+          {success
+            ? 'Account created. Taking you to sign in…'
+            : 'Use your email and a secure password.'}
+        </p>
+        {!success && (
+          <>
+            <input required name="full_name" placeholder="Full name" />
+            <input
+              required
+              name="email"
+              type="email"
+              placeholder="Email address"
+            />
+            <input
+              required
+              name="password"
+              type="password"
+              minLength={8}
+              placeholder="Password (minimum 8 characters)"
+            />
+            <input
+              required
+              name="confirm_password"
+              type="password"
+              minLength={8}
+              placeholder="Confirm password"
+            />
+            {error && <p className="error">{error}</p>}
+            <Button type="submit" loading={loading} className="full">
+              Create account
+            </Button>
+            <p>
+              Already have an account? <Link to="/login">Sign in</Link>
+            </p>
+          </>
+        )}
+      </form>
+    </main>
+  )
+}
+function Protected({
+  profile,
+  children,
+}: {
+  profile: Profile | null
+  children: ReactNode
+}) {
+  return profile ? children : <Navigate to="/login" replace />
+}
+function CRM({ profile, children }: { profile: Profile; children: ReactNode }) {
+  const nav = useNavigate()
+  return (
+    <div className="crm">
+      <aside>
+        <Link className="brand" to="/">
+          <i>H</i> Haven & Key
+        </Link>
+        <small>WORKSPACE</small>
+        <Link to="/dashboard">Overview</Link>
+        <Link to="/crm/leads">Leads</Link>
+        <Link to="/crm/customers">Customers</Link>
+        <Link to="/crm/follow-ups">Follow-ups</Link>
+        <Link to="/crm/site-visits">Site visits</Link>
+        <Link to="/crm/notifications">Notifications</Link>
+        <Link to="/crm/properties">Properties</Link>
+        <Link to="/crm/properties/new">Add listing</Link>
+        <Link to="/crm/enquiries">Enquiries</Link>
+        <Link to="/crm/agents">Agents</Link>
+        <button onClick={() => signOut().then(() => nav('/login'))}>
+          Sign out
+        </button>
+        <p>
+          {profile.full_name}
+          <small>{profile.role}</small>
+        </p>
+      </aside>
+      <div className="crm-mobile-nav">
+        <Link className="brand" to="/">
+          <i>H</i> H&K
+        </Link>
+        <Link to="/dashboard">Overview</Link>
+        <Link to="/crm/leads">Leads</Link>
+        <Link to="/crm/customers">Customers</Link>
+        <Link to="/crm/follow-ups">Tasks</Link>
+        <Link to="/crm/site-visits">Visits</Link>
+        <Link to="/crm/notifications">Inbox</Link>
+        <button onClick={() => signOut().then(() => nav('/login'))}>
+          Logout
+        </button>
+      </div>
+      <section>{children}</section>
+    </div>
+  )
+}
+function Dashboard() {
+  const [stats, setStats] = useState<Awaited<
+    ReturnType<typeof getDashboardStats>
+  > | null>(null)
+  const [activity, setActivity] = useState<
+    Awaited<ReturnType<typeof listActivities>>
+  >([])
+  useEffect(() => {
+    Promise.all([getDashboardStats(), listActivities({ limit: 6 })])
+      .then(([metrics, recentActivity]) => {
+        setStats(metrics)
+        setActivity(recentActivity)
+      })
+      .catch(() => {
+        setStats(null)
+        setActivity([])
+      })
+  }, [])
+  return (
+    <>
+      <div className="crm-head">
+        <div>
+          <p className="eyebrow">Overview</p>
+          <h1>Good morning.</h1>
+        </div>
+        <Link to="/crm/properties/new">
+          <Button>Add property</Button>
+        </Link>
+      </div>
+      <div className="stat-grid">
+        <Stat
+          title="All properties"
+          value={String(stats?.totalProperties ?? '—')}
+        />
+        <Stat
+          title="Published"
+          value={String(stats?.publishedProperties ?? '—')}
+        />
+        <Stat title="Customers" value={String(stats?.totalCustomers ?? '—')} />
+        <Stat title="Total leads" value={String(stats?.totalLeads ?? '—')} />
+        <Stat title="New leads" value={String(stats?.newLeads ?? '—')} />
+        <Stat
+          title="Qualified leads"
+          value={String(stats?.qualifiedLeads ?? '—')}
+        />
+        <Stat
+          title="Pending follow-ups"
+          value={String(stats?.pendingFollowUps ?? '—')}
+        />
+        <Stat
+          title="Upcoming visits"
+          value={String(stats?.upcomingSiteVisits ?? '—')}
+        />
+      </div>
+      <div className="panel-stack">
+        <div className="panel">
+          <h2>Recent activity</h2>
+          {activity.length ? (
+            <ul className="activity-list">
+              {activity.map((event) => (
+                <li key={event.id}>
+                  <strong>{event.action.replaceAll('_', ' ')}</strong>
+                  <span>{event.description}</span>
+                  <small>{formatDate(event.created_at)}</small>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p className="table-empty">No recent activity yet.</p>
+          )}
+        </div>
+      </div>
+    </>
+  )
+}
+function Stat({ title, value }: { title: string; value: string }) {
+  return (
+    <div className="stat">
+      <p>{title}</p>
+      <strong>{value}</strong>
+    </div>
+  )
+}
+function Properties() {
+  const [items, setItems] = useState<
+      Awaited<ReturnType<typeof listStaffProperties>>['data']
+    >([]),
+    [error, setError] = useState('')
+  useEffect(() => {
+    listStaffProperties({ page: 1, pageSize: 50 })
+      .then((x) => setItems(x.data))
+      .catch((e) => setError(getErrorMessage(e)))
+  }, [])
+  return (
+    <>
+      <div className="crm-head">
+        <div>
+          <p className="eyebrow">Portfolio</p>
+          <h1>Properties</h1>
+        </div>
+        <Link to="/crm/properties/new">
+          <Button>Add property</Button>
+        </Link>
+      </div>
+      {error ? (
+        <Notice text={error} />
+      ) : (
+        <div className="table">
+          <table>
+            <thead>
+              <tr>
+                <th>Property</th>
+                <th>Location</th>
+                <th>Status</th>
+                <th>Price</th>
+              </tr>
+            </thead>
+            <tbody>
+              {items.map((x) => (
+                <tr key={x.id}>
+                  <td>
+                    <b>
+                      <Link to={`/crm/properties/${x.id}/edit`}>{x.title}</Link>
+                    </b>
+                    <small>{titleCase(x.property_type)}</small>
+                  </td>
+                  <td>
+                    {x.city}, {x.region}
+                  </td>
+                  <td>
+                    <span className={x.status}>{x.status}</span>
+                  </td>
+                  <td>{formatCurrency(x.price, x.currency)}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+          {!items.length && <Empty title="No properties yet" />}
+        </div>
+      )}
+    </>
+  )
+}
+function EditRoute({ profile }: { profile: Profile }) {
+  const { id } = useParams()
+  return id ? (
+    <PropertyEditor id={id} profile={profile} />
+  ) : (
+    <Empty title="Property not found" />
+  )
+}
+function NewProperty({ profile }: { profile: Profile }) {
+  const nav = useNavigate(),
+    [error, setError] = useState(''),
+    [loading, setLoading] = useState(false)
+  function submit(e: FormEvent<HTMLFormElement>) {
+    e.preventDefault()
+    const f = new FormData(e.currentTarget),
+      title = String(f.get('title'))
+    setLoading(true)
+    createProperty({
+      title,
+      slug: slugify(title),
+      description: String(f.get('description')),
+      property_type: String(f.get('property_type')) as never,
+      listing_type: String(f.get('listing_type')) as never,
+      price: Number(f.get('price')),
+      address_line_1: String(f.get('address')),
+      city: String(f.get('city')),
+      region: String(f.get('region')),
+      bedrooms: Number(f.get('bedrooms') || 0),
+      bathrooms: Number(f.get('bathrooms') || 0),
+      created_by: profile.id,
+      agent_id: profile.id,
+    })
+      .then(() => nav('/crm/properties'))
+      .catch((e) => setError(getErrorMessage(e)))
+      .finally(() => setLoading(false))
+  }
+  return (
+    <>
+      <div className="crm-head">
+        <div>
+          <p className="eyebrow">Portfolio</p>
+          <h1>Add a property</h1>
+        </div>
+      </div>
+      <form className="property-form" onSubmit={submit}>
+        <label>
+          Property title
+          <input required name="title" />
+        </label>
+        <label>
+          Description
+          <textarea required name="description" />
+        </label>
+        <div>
+          <label>
+            Property type
+            <select name="property_type">
+              {PROPERTY_TYPES.map((x) => (
+                <option key={x.value} value={x.value}>
+                  {x.label}
+                </option>
+              ))}
+            </select>
+          </label>
+          <label>
+            Listing type
+            <select name="listing_type">
+              {LISTING_TYPES.map((x) => (
+                <option key={x.value} value={x.value}>
+                  {x.label}
+                </option>
+              ))}
+            </select>
+          </label>
+          <label>
+            Price
+            <input required name="price" type="number" min="0" />
+          </label>
+          <label>
+            Bedrooms
+            <input name="bedrooms" type="number" min="0" defaultValue="0" />
+          </label>
+          <label>
+            Bathrooms
+            <input name="bathrooms" type="number" min="0" defaultValue="0" />
+          </label>
+          <label>
+            Address
+            <input required name="address" />
+          </label>
+          <label>
+            City
+            <input required name="city" />
+          </label>
+          <label>
+            State / region
+            <input required name="region" />
+          </label>
+        </div>
+        {error && <p className="error">{error}</p>}
+        <Button type="submit" loading={loading}>
+          Create draft property
+        </Button>
+      </form>
+    </>
+  )
+}
+function Loading() {
+  return <div className="loading">Loading…</div>
+}
+function Notice({ text }: { text: string }) {
+  return <div className="notice">{text}</div>
+}
+function Empty({ title }: { title: string }) {
+  return (
+    <div className="empty">
+      <Home />
+      <h2>{title}</h2>
+      <p>Try adjusting your search or check back soon.</p>
+    </div>
+  )
+}

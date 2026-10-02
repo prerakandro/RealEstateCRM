@@ -74,10 +74,14 @@ export interface PropertySearchFilters {
   listingType?: ListingType
   propertyType?: PropertyType
   city?: string
+  region?: string
   minPrice?: number
   maxPrice?: number
   bedrooms?: number
+  maxBedrooms?: number
   bathrooms?: number
+  minArea?: number
+  maxArea?: number
   featured?: boolean
   page: number
   pageSize: number

@@ -251,6 +251,10 @@ export interface Database {
           p_featured?: boolean | null
           p_page?: number
           p_page_size?: number
+          p_region?: string | null
+          p_max_bedrooms?: number | null
+          p_min_area?: number | null
+          p_max_area?: number | null
         }
         Returns: PropertySearchRow[]
       }

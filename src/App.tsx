@@ -38,6 +38,8 @@ import {
 } from '@/services/properties'
 import { getPublicImageUrl } from '@/services/storage'
 import { PropertyEditor } from '@/components/PropertyEditor'
+import { PropertyCard } from '@/components/PropertyCard'
+import { ChatbotWidget } from '@/components/chatbot/ChatbotWidget'
 import { AgentsPage, EnquiriesPage } from '@/components/AdminOperations'
 import {
   CustomersPage,
@@ -74,145 +76,148 @@ function Site() {
   }, [])
   if (!ready) return <div className="page-center">Loading Haven & Key…</div>
   return (
-    <Routes>
-      <Route
-        path="/"
-        element={
-          <Public>
-            <HomePage />
-          </Public>
-        }
-      />
-      <Route
-        path="/properties"
-        element={
-          <Public>
-            <Listings />
-          </Public>
-        }
-      />
-      <Route
-        path="/properties/:slug"
-        element={
-          <Public>
-            <PropertyPage />
-          </Public>
-        }
-      />
-      <Route path="/login" element={<Login setProfile={setProfile} />} />
-      <Route path="/signup" element={<Signup />} />
-      <Route
-        path="/dashboard"
-        element={
-          <Protected profile={profile}>
-            <CRM profile={profile!}>
-              <Dashboard />
-            </CRM>
-          </Protected>
-        }
-      />
-      <Route
-        path="/crm/properties"
-        element={
-          <Protected profile={profile}>
-            <CRM profile={profile!}>
-              <Properties />
-            </CRM>
-          </Protected>
-        }
-      />
-      <Route
-        path="/crm/properties/new"
-        element={
-          <Protected profile={profile}>
-            <CRM profile={profile!}>
-              <NewProperty profile={profile!} />
-            </CRM>
-          </Protected>
-        }
-      />
-      <Route
-        path="/crm/properties/:id/edit"
-        element={
-          <Protected profile={profile}>
-            <CRM profile={profile!}>
-              <EditRoute profile={profile!} />
-            </CRM>
-          </Protected>
-        }
-      />
-      <Route
-        path="/crm/agents"
-        element={
-          <Protected profile={profile}>
-            <CRM profile={profile!}>
-              <AgentsPage profile={profile!} />
-            </CRM>
-          </Protected>
-        }
-      />
-      <Route
-        path="/crm/enquiries"
-        element={
-          <Protected profile={profile}>
-            <CRM profile={profile!}>
-              <EnquiriesPage />
-            </CRM>
-          </Protected>
-        }
-      />
-      <Route
-        path="/crm/customers"
-        element={
-          <Protected profile={profile}>
-            <CRM profile={profile!}>
-              <CustomersPage profile={profile!} />
-            </CRM>
-          </Protected>
-        }
-      />
-      <Route
-        path="/crm/leads"
-        element={
-          <Protected profile={profile}>
-            <CRM profile={profile!}>
-              <LeadsPage profile={profile!} />
-            </CRM>
-          </Protected>
-        }
-      />
-      <Route
-        path="/crm/follow-ups"
-        element={
-          <Protected profile={profile}>
-            <CRM profile={profile!}>
-              <FollowUpsPage profile={profile!} />
-            </CRM>
-          </Protected>
-        }
-      />
-      <Route
-        path="/crm/site-visits"
-        element={
-          <Protected profile={profile}>
-            <CRM profile={profile!}>
-              <SiteVisitsPage profile={profile!} />
-            </CRM>
-          </Protected>
-        }
-      />
-      <Route
-        path="/crm/notifications"
-        element={
-          <Protected profile={profile}>
-            <CRM profile={profile!}>
-              <NotificationsPage profile={profile!} />
-            </CRM>
-          </Protected>
-        }
-      />
-      <Route path="*" element={<Navigate to="/" replace />} />
-    </Routes>
+    <>
+      <Routes>
+        <Route
+          path="/"
+          element={
+            <Public>
+              <HomePage />
+            </Public>
+          }
+        />
+        <Route
+          path="/properties"
+          element={
+            <Public>
+              <Listings />
+            </Public>
+          }
+        />
+        <Route
+          path="/properties/:slug"
+          element={
+            <Public>
+              <PropertyPage />
+            </Public>
+          }
+        />
+        <Route path="/login" element={<Login setProfile={setProfile} />} />
+        <Route path="/signup" element={<Signup />} />
+        <Route
+          path="/dashboard"
+          element={
+            <Protected profile={profile}>
+              <CRM profile={profile!}>
+                <Dashboard />
+              </CRM>
+            </Protected>
+          }
+        />
+        <Route
+          path="/crm/properties"
+          element={
+            <Protected profile={profile}>
+              <CRM profile={profile!}>
+                <Properties />
+              </CRM>
+            </Protected>
+          }
+        />
+        <Route
+          path="/crm/properties/new"
+          element={
+            <Protected profile={profile}>
+              <CRM profile={profile!}>
+                <NewProperty profile={profile!} />
+              </CRM>
+            </Protected>
+          }
+        />
+        <Route
+          path="/crm/properties/:id/edit"
+          element={
+            <Protected profile={profile}>
+              <CRM profile={profile!}>
+                <EditRoute profile={profile!} />
+              </CRM>
+            </Protected>
+          }
+        />
+        <Route
+          path="/crm/agents"
+          element={
+            <Protected profile={profile}>
+              <CRM profile={profile!}>
+                <AgentsPage profile={profile!} />
+              </CRM>
+            </Protected>
+          }
+        />
+        <Route
+          path="/crm/enquiries"
+          element={
+            <Protected profile={profile}>
+              <CRM profile={profile!}>
+                <EnquiriesPage />
+              </CRM>
+            </Protected>
+          }
+        />
+        <Route
+          path="/crm/customers"
+          element={
+            <Protected profile={profile}>
+              <CRM profile={profile!}>
+                <CustomersPage profile={profile!} />
+              </CRM>
+            </Protected>
+          }
+        />
+        <Route
+          path="/crm/leads"
+          element={
+            <Protected profile={profile}>
+              <CRM profile={profile!}>
+                <LeadsPage profile={profile!} />
+              </CRM>
+            </Protected>
+          }
+        />
+        <Route
+          path="/crm/follow-ups"
+          element={
+            <Protected profile={profile}>
+              <CRM profile={profile!}>
+                <FollowUpsPage profile={profile!} />
+              </CRM>
+            </Protected>
+          }
+        />
+        <Route
+          path="/crm/site-visits"
+          element={
+            <Protected profile={profile}>
+              <CRM profile={profile!}>
+                <SiteVisitsPage profile={profile!} />
+              </CRM>
+            </Protected>
+          }
+        />
+        <Route
+          path="/crm/notifications"
+          element={
+            <Protected profile={profile}>
+              <CRM profile={profile!}>
+                <NotificationsPage profile={profile!} />
+              </CRM>
+            </Protected>
+          }
+        />
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
+      <ChatbotWidget />
+    </>
   )
 }
 function Public({ children }: { children: ReactNode }) {
@@ -514,38 +519,7 @@ function Cards({ items }: { items: PropertySearchItem[] }) {
   return (
     <div className="cards">
       {items.map((p) => (
-        <article className="property" key={p.id}>
-          <Link className="property-image" to={`/properties/${p.slug}`}>
-            {p.image_url ? (
-              <img src={p.image_url} alt={p.primary_image_alt || p.title} />
-            ) : (
-              <div className="fallback">
-                <Home />
-              </div>
-            )}
-            {p.featured && <span>Featured</span>}
-          </Link>
-          <div>
-            <p className="kind">
-              {titleCase(p.property_type)} ·{' '}
-              {p.listing_type === 'sale' ? 'For sale' : 'For rent'}
-            </p>
-            <h3>
-              <Link to={`/properties/${p.slug}`}>{p.title}</Link>
-            </h3>
-            <strong>
-              {formatCurrency(p.price, p.currency)}
-              {p.listing_type === 'rent' && <small>/month</small>}
-            </strong>
-            <p className="facts">
-              <BedDouble /> {p.bedrooms} beds <Bath /> {p.bathrooms} baths{' '}
-              {p.floor_area && <> · {p.floor_area.toLocaleString()} sq ft</>}
-            </p>
-            <p className="location">
-              <MapPin /> {p.city}, {p.region}
-            </p>
-          </div>
-        </article>
+        <PropertyCard key={p.id} property={p} />
       ))}
     </div>
   )

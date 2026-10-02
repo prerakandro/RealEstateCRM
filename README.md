@@ -17,6 +17,9 @@ for the current gap between declared types and deployed SQL.
 - Signed-URL image upload with client-side compression (max 1.5 MB, 2400 px)
 - Supabase Auth with email confirmations, password resets, and session refresh
 - Realtime subscriptions for live listing updates
+- Property assistant chatbot on public pages: rule-based natural-language
+  search, answers from live listing data and in-chat enquiries (no external
+  API; see [docs/chatbot.md](docs/chatbot.md))
 - Accessible, semantic markup (Oxlint + Prettier + Playwright axe checks)
 
 ## Tech stack

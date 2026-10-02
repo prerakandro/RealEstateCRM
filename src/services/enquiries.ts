@@ -1,16 +1,12 @@
 import { supabase } from '@/lib/supabase'
 import type { Enquiry, EnquiryInsert } from '@/types/domain'
-import { ServiceError, throwIfError } from './service-utils'
+import { throwIfError } from './service-utils'
 
-export async function createEnquiry(input: EnquiryInsert): Promise<Enquiry> {
-  const { data, error } = await supabase
-    .from('enquiries')
-    .insert(input)
-    .select('*')
-    .single()
+// Public visitors may insert enquiries but RLS gives them no SELECT access, so
+// the insert must not ask PostgREST to return the row.
+export async function createEnquiry(input: EnquiryInsert): Promise<void> {
+  const { error } = await supabase.from('enquiries').insert(input)
   throwIfError(error, 'Your enquiry could not be sent. Please try again.')
-  if (!data)
-    throw new ServiceError('Your enquiry could not be sent. Please try again.')
   const { error: workflowError } = await supabase.rpc(
     'create_public_enquiry_lead',
     {
@@ -25,7 +21,6 @@ export async function createEnquiry(input: EnquiryInsert): Promise<Enquiry> {
     workflowError,
     'Your enquiry was received but could not enter the CRM.',
   )
-  return data
 }
 
 export async function listEnquiries(): Promise<Enquiry[]> {

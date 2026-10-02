@@ -31,6 +31,14 @@ export async function searchPublicProperties(
     p_featured: filters.featured ?? null,
     p_page: filters.page,
     p_page_size: filters.pageSize,
+    // Milestone 4 filters are sent only when used, so pages that don't need
+    // them keep working against the original search_properties signature.
+    ...(filters.region && { p_region: filters.region }),
+    ...(filters.maxBedrooms !== undefined && {
+      p_max_bedrooms: filters.maxBedrooms,
+    }),
+    ...(filters.minArea !== undefined && { p_min_area: filters.minArea }),
+    ...(filters.maxArea !== undefined && { p_max_area: filters.maxArea }),
   })
   throwIfError(error, 'Properties could not be loaded.')
 
@@ -57,6 +65,26 @@ export async function getFeaturedProperties(
     pageSize: limit,
   })
   return result.data
+}
+
+/** Distinct cities and states that currently have published listings. */
+export async function listPublicLocations(): Promise<{
+  cities: string[]
+  regions: string[]
+}> {
+  const { data, error } = await supabase
+    .from('properties')
+    .select('city, region')
+    .eq('status', 'published')
+    .limit(1000)
+  throwIfError(error, 'Locations could not be loaded.')
+  const rows = data ?? []
+  const unique = (values: string[]) =>
+    [...new Set(values.map((value) => value.trim()).filter(Boolean))].sort()
+  return {
+    cities: unique(rows.map((row) => row.city)),
+    regions: unique(rows.map((row) => row.region)),
+  }
 }
 
 export async function getPublicPropertyBySlug(

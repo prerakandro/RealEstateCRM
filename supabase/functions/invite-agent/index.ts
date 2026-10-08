@@ -42,7 +42,7 @@ Deno.serve(async (request) => {
     )
   const admin = createClient(url, service)
   const { data, error } = await admin.auth.admin.inviteUserByEmail(body.email, {
-    data: { full_name: body.full_name },
+    data: { full_name: body.full_name, invited_by_admin: true },
   })
   if (error || !data.user)
     return Response.json(
@@ -51,7 +51,7 @@ Deno.serve(async (request) => {
     )
   await admin
     .from('profiles')
-    .update({ role: body.role, phone: body.phone || null })
+    .update({ role: body.role, phone: body.phone || null, active: true })
     .eq('id', data.user.id)
   return Response.json({ ok: true }, { headers: corsHeaders })
 })

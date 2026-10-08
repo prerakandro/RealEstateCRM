@@ -1045,3 +1045,786 @@ footer {
     font-size: 16px;
   }
 }
+
+/* ---- Milestone 5: advanced CRM & property management ---- */
+/* .table is also a Tailwind utility (display: table), which shrank every
+   table wrapper to its content width. */
+.table {
+  display: block;
+}
+td .thumb-fallback {
+  padding: 0;
+  border-radius: 0;
+}
+.image-manager input[type='file'] {
+  font-size: 11px;
+  max-width: 100%;
+}
+
+.crm aside > a.active,
+.crm-mobile-nav a.active {
+  background: #ffffff14;
+  color: #fff;
+  border-radius: 6px;
+}
+.panel,
+.crm-form {
+  background: #fff;
+  border: 1px solid var(--line);
+  padding: 22px;
+  margin-bottom: 18px;
+}
+.panel-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+.panel-head h2,
+.crm-form h2 {
+  font-size: 24px;
+  margin: 0;
+}
+.panel-head small {
+  font-size: 11px;
+  color: #6b766d;
+}
+.panel-stack {
+  margin-top: 22px;
+}
+.panel .table {
+  border: 0;
+}
+.panel .crm-form {
+  border-color: #cfd9d0;
+  background: #fbfcfa;
+}
+.activity-list,
+.note-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.activity-list li,
+.note-list li {
+  display: grid;
+  gap: 3px;
+  padding: 11px 0;
+  border-bottom: 1px solid var(--line);
+  font-size: 12px;
+}
+.activity-list li:last-child,
+.note-list li:last-child {
+  border-bottom: 0;
+}
+.activity-list strong {
+  text-transform: capitalize;
+}
+.activity-list small,
+.note-list small {
+  color: #7b857e;
+  font-size: 10px;
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+.note-list p {
+  margin: 0;
+  white-space: pre-wrap;
+  line-height: 1.5;
+}
+.note-form {
+  display: grid;
+  gap: 8px;
+  justify-items: start;
+  margin-bottom: 8px;
+}
+.note-form textarea {
+  width: 100%;
+  min-height: 70px;
+  border: 1px solid var(--line);
+  padding: 10px;
+  font-size: 12px;
+  resize: vertical;
+}
+.crm-form {
+  max-width: 900px;
+  display: grid;
+  gap: 12px;
+}
+.crm-form label {
+  display: grid;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 700;
+}
+.crm-form input,
+.crm-form select,
+.crm-form textarea,
+.crm-filters input,
+.crm-filters select,
+.crm-head select,
+.facts-grid select,
+td select,
+.inline-input,
+.customer-picker input,
+.customer-picker select {
+  width: 100%;
+  min-width: 0;
+  border: 1px solid var(--line);
+  background: #fff;
+  padding: 10px;
+  font-size: 12px;
+  font-weight: 400;
+  color: var(--ink);
+  outline-color: var(--moss);
+}
+td select,
+.inline-input {
+  padding: 6px 8px;
+  min-width: 120px;
+}
+.crm-head select {
+  width: auto;
+}
+.crm-form textarea {
+  min-height: 80px;
+  resize: vertical;
+}
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 12px;
+}
+.customer-picker {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+.crm-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+  margin: 0 0 18px;
+}
+.crm-filters input {
+  flex: 1 1 220px;
+  width: auto;
+}
+.crm-filters select {
+  flex: 0 1 170px;
+  width: auto;
+}
+.segmented {
+  display: inline-flex;
+  border: 1px solid var(--line);
+  background: #fff;
+}
+.segmented button {
+  border: 0;
+  background: none;
+  padding: 9px 14px;
+  font: 600 12px Manrope;
+  color: #56645a;
+  cursor: pointer;
+}
+.segmented button + button {
+  border-left: 1px solid var(--line);
+}
+.segmented button[aria-pressed='true'] {
+  background: var(--moss);
+  color: #fff;
+}
+.pill {
+  display: inline-block;
+  padding: 3px 8px;
+  border-radius: 99px;
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: capitalize;
+  background: #eef0ec;
+  color: #56645a;
+  margin-right: 4px;
+  white-space: nowrap;
+}
+.pill-urgent,
+.pill-overdue,
+.pill-lost,
+.pill-missed,
+.pill-no_show,
+.pill-cancelled {
+  background: #f8e1dc;
+  color: #a13325;
+}
+.pill-high,
+.pill-today,
+.pill-negotiation,
+.pill-site_visit_scheduled,
+.pill-scheduled,
+.pill-pending,
+.pill-draft {
+  background: #f5ead4;
+  color: #97661b;
+}
+.pill-converted,
+.pill-completed,
+.pill-confirmed,
+.pill-active,
+.pill-published,
+.pill-qualified {
+  background: #e2f0e5;
+  color: #28713d;
+}
+.pill-new,
+.pill-contacted,
+.pill-medium {
+  background: #e3ecf5;
+  color: #2f5c86;
+}
+.row-actions {
+  white-space: nowrap;
+}
+.row-actions > * + * {
+  margin-left: 12px;
+}
+.notice-inline {
+  background: #eef4ef;
+  border: 1px solid #cfe0d3;
+  color: #28513a;
+  padding: 10px 14px;
+  font-size: 12px;
+  margin: 0 0 16px;
+}
+.detail-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 340px;
+  gap: 18px;
+  align-items: start;
+}
+.facts-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 16px;
+  margin: 0;
+}
+.facts-grid dt {
+  font: 9px 'DM Mono';
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #778178;
+  margin-bottom: 5px;
+}
+.facts-grid dd {
+  margin: 0;
+  font-size: 13px;
+}
+.facts-grid dd small {
+  display: block;
+  color: #7b857e;
+  font-size: 11px;
+  margin-top: 3px;
+}
+.lead-message {
+  margin: 18px 0 0;
+  padding: 12px 14px;
+  background: #f7f5ef;
+  border-left: 3px solid var(--moss);
+  font-size: 12px;
+  line-height: 1.6;
+  white-space: pre-wrap;
+}
+.match-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 14px;
+}
+.lead-board {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(230px, 1fr);
+  gap: 12px;
+  overflow-x: auto;
+  padding-bottom: 12px;
+  align-items: start;
+}
+.lead-column {
+  background: #f1efe9;
+  border: 1px solid var(--line);
+  padding: 10px;
+  min-height: 220px;
+  display: grid;
+  gap: 8px;
+  align-content: start;
+  transition: background 0.15s;
+}
+.lead-column.over {
+  background: #e2ebe3;
+  border-color: var(--moss);
+}
+.lead-column h3 {
+  font: 700 11px Manrope;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #56645a;
+  margin: 2px 2px 4px;
+  display: flex;
+  justify-content: space-between;
+}
+.lead-card {
+  background: #fff;
+  border: 1px solid var(--line);
+  padding: 10px;
+  display: grid;
+  gap: 5px;
+  font-size: 12px;
+  cursor: grab;
+  touch-action: none;
+}
+.lead-card.dragging {
+  opacity: 0.85;
+  box-shadow: 0 10px 24px #20332b30;
+  position: relative;
+  z-index: 5;
+}
+.lead-card a {
+  font-weight: 700;
+  text-decoration: none;
+}
+.lead-card small {
+  color: #7b857e;
+  font-size: 10px;
+}
+.lead-card > div {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.bulk-bar {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  background: #203b31;
+  color: #fff;
+  padding: 10px 14px;
+  margin-bottom: 12px;
+  font-size: 12px;
+}
+.bulk-bar .text-button {
+  color: #dbe5dc;
+}
+.property-cell {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+.property-cell img,
+.thumb-fallback {
+  width: 54px;
+  height: 40px;
+  object-fit: cover;
+  flex: none;
+}
+.thumb-fallback {
+  display: grid;
+  place-items: center;
+  background: #eef0ec;
+  color: var(--moss);
+}
+.property-form fieldset {
+  border: 0;
+  border-top: 1px solid var(--line);
+  padding: 16px 0 0;
+  margin: 0 0 8px;
+}
+.property-form fieldset:first-child {
+  border-top: 0;
+  padding-top: 0;
+}
+.property-form legend {
+  font: 9px 'DM Mono';
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #778178;
+  padding: 0 0 10px;
+}
+.property-form fieldset > div {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0 16px;
+}
+.property-form textarea.short {
+  height: 64px;
+}
+.sortable-image {
+  display: grid;
+  grid-template-columns: 24px 72px 1fr;
+  gap: 4px 8px;
+  align-items: center;
+  border-top: 1px solid var(--line);
+  padding-top: 10px;
+  font-size: 10px;
+  background: #fff;
+}
+.sortable-image img {
+  width: 72px;
+  height: 55px;
+  object-fit: cover;
+  grid-row: span 3;
+}
+.sortable-image .drag-handle {
+  grid-row: span 3;
+  cursor: grab;
+  color: #7b857e;
+  touch-action: none;
+}
+.sortable-image button {
+  background: none;
+  border: 0;
+  padding: 0;
+  text-align: left;
+  color: #345845;
+  font-size: 10px;
+  cursor: pointer;
+}
+.stat-link {
+  text-decoration: none;
+  color: inherit;
+  transition: border-color 0.15s;
+}
+.stat-link:hover {
+  border-color: var(--moss);
+}
+.notification-list {
+  display: grid;
+  gap: 8px;
+}
+.notification {
+  background: #fff;
+  border: 1px solid var(--line);
+  border-left: 3px solid var(--moss);
+  padding: 14px 16px;
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: center;
+  font-size: 12px;
+}
+.notification.read {
+  border-left-color: var(--line);
+  opacity: 0.75;
+}
+.notification p {
+  margin: 4px 0;
+  color: #56645a;
+}
+.notification small {
+  color: #7b857e;
+  font-size: 10px;
+}
+.amenities {
+  list-style: none;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.amenities li {
+  border: 1px solid var(--line);
+  background: #fff;
+  padding: 6px 12px;
+  font-size: 12px;
+}
+@media (max-width: 1024px) {
+  .detail-layout {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+@media (max-width: 760px) {
+  .crm-head {
+    flex-wrap: wrap;
+  }
+  .customer-picker,
+  .property-form fieldset > div {
+    grid-template-columns: 1fr;
+  }
+  .crm-filters select,
+  .crm-filters input {
+    flex: 1 1 100%;
+  }
+  .panel,
+  .crm-form {
+    padding: 16px;
+  }
+  .notification {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}
+
+.editor-side {
+  display: grid;
+  gap: 18px;
+}
+.property-activity h3 {
+  font: 700 11px Manrope;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #56645a;
+  margin: 16px 0 4px;
+}
+.more-filters label {
+  display: grid;
+  gap: 4px;
+  font-size: 11px;
+  font-weight: 700;
+  color: #56645a;
+}
+.more-filters input,
+.more-filters select {
+  width: 160px;
+}
+.bulk-bar select {
+  width: auto;
+  padding: 6px 8px;
+  font-size: 12px;
+  border: 0;
+}
+
+/* ---- Responsive CRM ---- */
+/* The content column may shrink below its content's width; wide tables
+   scroll inside their own box instead of widening the page. */
+.crm {
+  grid-template-columns: 235px minmax(0, 1fr);
+}
+.table {
+  overflow-x: auto;
+}
+.bulk-bar {
+  flex-wrap: wrap;
+}
+
+/* Tablets and small laptops: top navigation instead of the sidebar. */
+@media (max-width: 900px) {
+  .crm {
+    display: block;
+  }
+  .crm aside {
+    display: none;
+  }
+  .crm-mobile-nav {
+    display: flex;
+    gap: 7px;
+    align-items: center;
+    overflow-x: auto;
+    white-space: nowrap;
+    background: #203b31;
+    padding: 12px 16px;
+    position: sticky;
+    top: 0;
+    z-index: 30;
+  }
+  .crm-mobile-nav a,
+  .crm-mobile-nav button {
+    flex: 0 0 auto;
+    color: #eaf0e8;
+    background: transparent;
+    border: 0;
+    font: 600 11px Manrope;
+    text-decoration: none;
+    padding: 7px;
+  }
+  .crm-mobile-nav .brand {
+    color: #fff !important;
+    padding-left: 0;
+    margin-right: 3px;
+  }
+  .crm-mobile-nav .brand i {
+    width: 24px;
+    height: 24px;
+  }
+  .crm-mobile-nav button {
+    margin-left: auto;
+  }
+  .crm > section {
+    padding: 28px 24px;
+  }
+  .editor-layout {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Phones: tables become stacked cards (labels come from the column
+   headers, see src/lib/tableLabels.ts). */
+@media (max-width: 760px) {
+  .table {
+    border: 0;
+    background: none;
+    overflow: visible;
+  }
+  .table table {
+    min-width: 0;
+  }
+  .table table,
+  .table thead,
+  .table tbody,
+  .table tr,
+  .table td {
+    display: block;
+    width: 100%;
+  }
+  .table thead tr {
+    display: flex;
+  }
+  .table th {
+    display: none;
+  }
+  /* Keep "select all" reachable. */
+  .table th:has(input[type='checkbox']) {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: none;
+    border: 0;
+    padding: 0 0 10px;
+  }
+  .table th:has(input[type='checkbox'])::after {
+    content: 'Select all';
+    font: 600 11px Manrope;
+    letter-spacing: 0;
+    text-transform: none;
+    color: #56645a;
+  }
+  .table tbody tr {
+    position: relative;
+    background: #fff;
+    border: 1px solid var(--line);
+    margin-bottom: 10px;
+    padding: 12px 14px;
+  }
+  .table td {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px 10px;
+    align-items: center;
+    padding: 6px 0;
+    border: 0;
+    font-size: 12px;
+  }
+  .table td::before {
+    content: attr(data-label);
+    flex: 0 0 100px;
+    font: 9px 'DM Mono';
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: #778178;
+  }
+  /* Cells without a header (actions) and the record's title cell. */
+  .table td[data-label=''],
+  .table td:not([data-label]),
+  .table td:has(> b),
+  .table td:has(> .property-cell) {
+    display: block;
+  }
+  .table td[data-label='']::before,
+  .table td:not([data-label])::before,
+  .table td:has(> b)::before,
+  .table td:has(> .property-cell)::before {
+    content: none;
+  }
+  .table td:has(> b) {
+    font-size: 13px;
+    padding-bottom: 8px;
+  }
+  /* Row checkbox sits in the card's top-right corner. */
+  .table td:has(> input[type='checkbox']) {
+    position: absolute;
+    top: 12px;
+    right: 14px;
+    width: auto;
+    padding: 0;
+  }
+  .table tr:has(> td > input[type='checkbox']) td:nth-child(2) {
+    padding-right: 30px;
+  }
+  .table td select,
+  .table .inline-input {
+    flex: 1 1 0;
+    width: auto;
+    min-width: 0;
+  }
+  .table td.row-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+    padding-top: 10px;
+    border-top: 1px solid var(--line);
+    margin-top: 6px;
+  }
+  .table .row-actions > * + * {
+    margin-left: 0;
+  }
+  .table .table-empty {
+    background: #fff;
+    border: 1px solid var(--line);
+  }
+
+  .crm > section {
+    padding: 22px 16px;
+  }
+  .crm-head .action-row {
+    width: 100%;
+  }
+  .crm-filters select,
+  .more-filters label {
+    flex: 1 1 calc(50% - 4px);
+  }
+  .crm-filters input {
+    flex: 1 1 100%;
+  }
+  .more-filters input,
+  .more-filters select {
+    width: 100%;
+  }
+  .segmented {
+    width: 100%;
+    overflow-x: auto;
+  }
+  .segmented button {
+    flex: 1 0 auto;
+  }
+  .facts-grid {
+    grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+  }
+  .lead-board {
+    grid-auto-columns: minmax(78vw, 1fr);
+    scroll-snap-type: x mandatory;
+  }
+  .lead-column {
+    scroll-snap-align: start;
+  }
+  .stat-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+  .stat {
+    padding: 16px;
+  }
+  .stat strong {
+    font-size: 23px;
+  }
+}
+
+/* Back link: icon and text on one line (Tailwind makes svg a block). */
+.back {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  justify-self: start;
+  text-decoration: none;
+}
+.back:hover {
+  color: var(--ink);
+  text-decoration: underline;
+}

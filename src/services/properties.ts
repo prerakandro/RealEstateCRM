@@ -1,5 +1,6 @@
 import { supabase } from '@/lib/supabase'
 import type {
+  ListingType,
   PaginatedResult,
   Property,
   PropertyImage,
@@ -7,9 +8,11 @@ import type {
   PropertySearchFilters,
   PropertySearchItem,
   PropertyStatus,
+  PropertyType,
   PropertyUpdate,
   PropertyWithRelations,
 } from '@/types/domain'
+import { copySlug } from '@/lib/crm'
 import { getPublicImageUrl } from './storage'
 import { ServiceError, throwIfError } from './service-utils'
 
@@ -126,6 +129,9 @@ export async function getPublicPropertyBySlug(
 export interface StaffPropertyFilters {
   query?: string
   status?: PropertyStatus
+  propertyType?: PropertyType
+  listingType?: ListingType
+  agentId?: string
   page: number
   pageSize: number
 }
@@ -146,9 +152,17 @@ export async function listStaffProperties(
     .range(start, end)
 
   if (filters.status) query = query.eq('status', filters.status)
+  if (filters.propertyType)
+    query = query.eq('property_type', filters.propertyType)
+  if (filters.listingType) query = query.eq('listing_type', filters.listingType)
+  // 'none' finds listings without an agent, for bulk assignment.
+  if (filters.agentId === 'none') query = query.is('agent_id', null)
+  else if (filters.agentId) query = query.eq('agent_id', filters.agentId)
   if (filters.query) {
-    const escaped = filters.query.replaceAll(',', ' ')
-    query = query.or(`title.ilike.%${escaped}%,city.ilike.%${escaped}%`)
+    const escaped = filters.query.replace(/[,()]/g, ' ')
+    query = query.or(
+      `title.ilike.%${escaped}%,city.ilike.%${escaped}%,region.ilike.%${escaped}%`,
+    )
   }
 
   const { data, error, count } = await query
@@ -263,3 +277,48 @@ export const archiveProperty = (id: string) =>
   runLifecycle('archive_property', id)
 export const restoreProperty = (id: string) =>
   runLifecycle('restore_property', id)
+
+/**
+ * Copies a listing's details into a new draft owned by `ownerId`.
+ * Images are not copied: storage paths belong to exactly one property.
+ */
+export async function duplicateProperty(
+  id: string,
+  ownerId: string,
+): Promise<Property> {
+  const source = await getStaffPropertyById(id)
+  const {
+    id: _id,
+    property_images: _images,
+    agent: _agent,
+    created_at: _createdAt,
+    updated_at: _updatedAt,
+    published_at: _publishedAt,
+    ...fields
+  } = source
+  return createProperty({
+    ...fields,
+    title: `${source.title} (copy)`.slice(0, 180),
+    slug: copySlug(source.slug, Date.now().toString(36).slice(-5)),
+    status: 'draft',
+    featured: false,
+    created_by: ownerId,
+    agent_id: source.agent_id ?? ownerId,
+  })
+}
+
+export type BulkPropertyAction = 'publish' | 'archive' | 'restore'
+
+/** Runs a lifecycle change on each listing; returns the ids that failed. */
+export async function bulkChangeStatus(
+  ids: string[],
+  action: BulkPropertyAction,
+): Promise<string[]> {
+  const run = {
+    publish: publishProperty,
+    archive: archiveProperty,
+    restore: restoreProperty,
+  }[action]
+  const results = await Promise.allSettled(ids.map((id) => run(id)))
+  return ids.filter((_, index) => results[index]?.status === 'rejected')
+}

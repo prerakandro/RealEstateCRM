@@ -1,6 +1,11 @@
 import { useEffect, useState, type FormEvent } from 'react'
 import { Button } from '@/components/ui/Button'
-import { inviteAgent, listAgents, setAgentActive } from '@/services/agents'
+import {
+  inviteAgent,
+  listAgents,
+  setAgentActive,
+  updateAgent,
+} from '@/services/agents'
 import { listEnquiries, updateEnquiryStatus } from '@/services/enquiries'
 import { formatDate, getErrorMessage } from '@/lib/utils'
 import type { Enquiry, Profile } from '@/types/domain'
@@ -17,10 +22,12 @@ export function AgentsPage({ profile }: { profile: Profile }) {
   useEffect(() => {
     void refresh()
   }, [])
+  const pending = agents.filter((agent) => !agent.active)
   function submit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault()
     if (profile.role !== 'admin') return
-    const form = new FormData(e.currentTarget)
+    const formElement = e.currentTarget
+    const form = new FormData(formElement)
     setSending(true)
     inviteAgent({
       full_name: String(form.get('name')),
@@ -29,7 +36,7 @@ export function AgentsPage({ profile }: { profile: Profile }) {
       role: String(form.get('role')) as 'admin' | 'agent',
     })
       .then(() => {
-        e.currentTarget.reset()
+        formElement.reset()
         refresh()
       })
       .catch((x) => setError(getErrorMessage(x)))
@@ -61,6 +68,13 @@ export function AgentsPage({ profile }: { profile: Profile }) {
         </form>
       )}
       {error && <p className="error">{error}</p>}
+      {profile.role === 'admin' && pending.length > 0 && (
+        <p className="notice-inline">
+          {pending.length} inactive account{pending.length > 1 ? 's' : ''}. New
+          sign-ups stay inactive until you activate them; activate only people
+          you know.
+        </p>
+      )}
       <div className="table">
         <table>
           <thead>
@@ -79,9 +93,36 @@ export function AgentsPage({ profile }: { profile: Profile }) {
                   <b>{agent.full_name}</b>
                   <small>{agent.email}</small>
                 </td>
-                <td>{agent.role}</td>
+                <td>
+                  {profile.role === 'admin' && agent.id !== profile.id ? (
+                    <select
+                      aria-label={`Role for ${agent.full_name}`}
+                      value={agent.role}
+                      onChange={(e) =>
+                        updateAgent(agent.id, {
+                          role: e.target.value as 'admin' | 'agent',
+                        })
+                          .then(refresh)
+                          .catch((x) => setError(getErrorMessage(x)))
+                      }
+                    >
+                      <option value="agent">Agent</option>
+                      <option value="admin">Admin</option>
+                    </select>
+                  ) : (
+                    agent.role
+                  )}
+                </td>
                 <td>{agent.phone || '—'}</td>
-                <td>{agent.active ? 'Active' : 'Inactive'}</td>
+                <td>
+                  <span
+                    className={
+                      agent.active ? 'pill pill-active' : 'pill pill-inactive'
+                    }
+                  >
+                    {agent.active ? 'Active' : 'Inactive / pending'}
+                  </span>
+                </td>
                 <td>
                   {profile.role === 'admin' && agent.id !== profile.id && (
                     <button

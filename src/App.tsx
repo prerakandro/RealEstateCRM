@@ -1,7 +1,14 @@
-import { useEffect, useState, type FormEvent, type ReactNode } from 'react'
+import {
+  useEffect,
+  useRef,
+  useState,
+  type FormEvent,
+  type ReactNode,
+} from 'react'
 import {
   BrowserRouter,
   Link,
+  NavLink,
   Navigate,
   Route,
   Routes,
@@ -20,23 +27,22 @@ import {
   X,
 } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
+import { BackLink } from '@/components/ui/BackLink'
 import {
   formatCurrency,
   formatDate,
   getErrorMessage,
-  slugify,
   titleCase,
 } from '@/lib/utils'
 import { getMyProfile, signIn, signOut, signUp } from '@/services/auth'
 import { createEnquiry } from '@/services/enquiries'
 import {
-  createProperty,
   getFeaturedProperties,
   getPublicPropertyBySlug,
-  listStaffProperties,
   searchPublicProperties,
 } from '@/services/properties'
 import { getPublicImageUrl } from '@/services/storage'
+import { watchTableLabels } from '@/lib/tableLabels'
 import { PropertyEditor } from '@/components/PropertyEditor'
 import { PropertyCard } from '@/components/PropertyCard'
 import { ChatbotWidget } from '@/components/chatbot/ChatbotWidget'
@@ -48,6 +54,12 @@ import {
   NotificationsPage,
   SiteVisitsPage,
 } from '@/components/CRMOperations'
+import { LeadDetailPage } from '@/components/crm/LeadDetailPage'
+import { CustomerDetailPage } from '@/components/crm/CustomerDetailPage'
+import {
+  NewPropertyPage,
+  StaffPropertiesPage,
+} from '@/components/property/StaffPropertiesPage'
 import { getDashboardStats } from '@/services/dashboard'
 import { listActivities } from '@/services/activities'
 import type {
@@ -75,6 +87,19 @@ function Site() {
       .finally(() => setReady(true))
   }, [])
   if (!ready) return <div className="page-center">Loading Haven & Key…</div>
+  // Wraps a CRM page: active staff only, optionally admin-only, in the shell.
+  const staff = (
+    render: (profile: Profile) => ReactNode,
+    options: { adminOnly?: boolean } = {},
+  ) => (
+    <Protected profile={profile} adminOnly={options.adminOnly}>
+      {profile && (
+        <CRM profile={profile} onSignOut={() => setProfile(null)}>
+          {render(profile)}
+        </CRM>
+      )}
+    </Protected>
+  )
   return (
     <>
       <Routes>
@@ -106,113 +131,86 @@ function Site() {
         <Route path="/signup" element={<Signup />} />
         <Route
           path="/dashboard"
-          element={
-            <Protected profile={profile}>
-              <CRM profile={profile!}>
-                <Dashboard />
-              </CRM>
-            </Protected>
-          }
+          element={staff(() => (
+            <Dashboard />
+          ))}
         />
         <Route
           path="/crm/properties"
-          element={
-            <Protected profile={profile}>
-              <CRM profile={profile!}>
-                <Properties />
-              </CRM>
-            </Protected>
-          }
+          element={staff((p) => (
+            <StaffPropertiesPage profile={p} />
+          ))}
         />
         <Route
           path="/crm/properties/new"
-          element={
-            <Protected profile={profile}>
-              <CRM profile={profile!}>
-                <NewProperty profile={profile!} />
-              </CRM>
-            </Protected>
-          }
+          element={staff((p) => (
+            <NewPropertyPage profile={p} />
+          ))}
         />
         <Route
           path="/crm/properties/:id/edit"
-          element={
-            <Protected profile={profile}>
-              <CRM profile={profile!}>
-                <EditRoute profile={profile!} />
-              </CRM>
-            </Protected>
-          }
+          element={staff((p) => (
+            <EditRoute profile={p} />
+          ))}
         />
         <Route
           path="/crm/agents"
-          element={
-            <Protected profile={profile}>
-              <CRM profile={profile!}>
-                <AgentsPage profile={profile!} />
-              </CRM>
-            </Protected>
-          }
+          element={staff(
+            (p) => (
+              <AgentsPage profile={p} />
+            ),
+            {
+              adminOnly: true,
+            },
+          )}
         />
         <Route
           path="/crm/enquiries"
-          element={
-            <Protected profile={profile}>
-              <CRM profile={profile!}>
-                <EnquiriesPage />
-              </CRM>
-            </Protected>
-          }
+          element={staff(() => (
+            <EnquiriesPage />
+          ))}
         />
         <Route
           path="/crm/customers"
-          element={
-            <Protected profile={profile}>
-              <CRM profile={profile!}>
-                <CustomersPage profile={profile!} />
-              </CRM>
-            </Protected>
-          }
+          element={staff((p) => (
+            <CustomersPage profile={p} />
+          ))}
+        />
+        <Route
+          path="/crm/customers/:id"
+          element={staff((p) => (
+            <CustomerDetailPage profile={p} />
+          ))}
         />
         <Route
           path="/crm/leads"
-          element={
-            <Protected profile={profile}>
-              <CRM profile={profile!}>
-                <LeadsPage profile={profile!} />
-              </CRM>
-            </Protected>
-          }
+          element={staff((p) => (
+            <LeadsPage profile={p} />
+          ))}
+        />
+        <Route
+          path="/crm/leads/:id"
+          element={staff((p) => (
+            <LeadDetailPage profile={p} />
+          ))}
         />
         <Route
           path="/crm/follow-ups"
-          element={
-            <Protected profile={profile}>
-              <CRM profile={profile!}>
-                <FollowUpsPage profile={profile!} />
-              </CRM>
-            </Protected>
-          }
+          element={staff((p) => (
+            <FollowUpsPage profile={p} />
+          ))}
         />
         <Route
           path="/crm/site-visits"
-          element={
-            <Protected profile={profile}>
-              <CRM profile={profile!}>
-                <SiteVisitsPage profile={profile!} />
-              </CRM>
-            </Protected>
-          }
+          element={staff((p) => (
+            <SiteVisitsPage profile={p} />
+          ))}
         />
         <Route
           path="/crm/notifications"
-          element={
-            <Protected profile={profile}>
-              <CRM profile={profile!}>
-                <NotificationsPage profile={profile!} />
-              </CRM>
-            </Protected>
-          }
+          element={staff((p) => (
+            <NotificationsPage profile={p} />
+          ))}
         />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
@@ -538,6 +536,7 @@ function PropertyPage() {
   if (error)
     return (
       <main className="container-app detail">
+        <BackLink fallback="/properties" fallbackLabel="All homes" />
         <Empty title={error} />
       </main>
     )
@@ -561,9 +560,7 @@ function PropertyPage() {
   }
   return (
     <main className="container-app detail">
-      <Link to="/properties" className="back">
-        ← Back to all homes
-      </Link>
+      <BackLink fallback="/properties" fallbackLabel="All homes" />
       <div className="gallery">
         {images.length ? (
           images
@@ -604,9 +601,24 @@ function PropertyPage() {
               <Bath /> {current.bathrooms} bathrooms
             </span>
             <span>{current.floor_area || '—'} sq ft</span>
+            {current.parking_spaces > 0 && (
+              <span>{current.parking_spaces} parking</span>
+            )}
+            {current.year_built && <span>Built {current.year_built}</span>}
           </div>
+          {current.excerpt && <p className="lead">{current.excerpt}</p>}
           <h2>About this home</h2>
           <p className="description">{current.description}</p>
+          {current.amenities.length > 0 && (
+            <>
+              <h2>Amenities</h2>
+              <ul className="amenities">
+                {current.amenities.map((amenity) => (
+                  <li key={amenity}>{amenity}</li>
+                ))}
+              </ul>
+            </>
+          )}
         </article>
         <aside className="contact-card">
           {sent ? (
@@ -655,8 +667,14 @@ function Login({ setProfile }: { setProfile: (p: Profile) => void }) {
     setLoading(true)
     signIn(String(f.get('email')), String(f.get('password')))
       .then(getMyProfile)
-      .then((p) => {
+      .then(async (p) => {
         if (!p) throw Error('Your account has no staff profile.')
+        if (!p.active) {
+          await signOut()
+          throw Error(
+            'Your account is waiting for an administrator to approve it. You can sign in once it has been activated.',
+          )
+        }
         setProfile(p)
         nav('/dashboard')
       })
@@ -669,6 +687,7 @@ function Login({ setProfile }: { setProfile: (p: Profile) => void }) {
         <i>H</i> Haven & Key
       </Link>
       <form onSubmit={submit}>
+        <BackLink fallback="/" fallbackLabel="Back to website" />
         <p className="eyebrow">For the team</p>
         <h1>Welcome back.</h1>
         <p>Sign in to manage listings and enquiries.</p>
@@ -711,7 +730,7 @@ function Signup() {
     signUp(String(f.get('full_name')), String(f.get('email')), password)
       .then(() => {
         setSuccess(true)
-        setTimeout(() => nav('/login'), 1200)
+        setTimeout(() => nav('/login'), 3500)
       })
       .catch((e) => setError(getErrorMessage(e)))
       .finally(() => setLoading(false))
@@ -722,12 +741,13 @@ function Signup() {
         <i>H</i> Haven & Key
       </Link>
       <form onSubmit={submit}>
+        <BackLink fallback="/" fallbackLabel="Back to website" />
         <p className="eyebrow">Join the team</p>
         <h1>Create account.</h1>
         <p>
           {success
-            ? 'Account created. Taking you to sign in…'
-            : 'Use your email and a secure password.'}
+            ? 'Account created. An administrator needs to approve it before you can sign in.'
+            : 'Staff accounts are activated by an administrator after sign-up.'}
         </p>
         {!success && (
           <>
@@ -767,15 +787,59 @@ function Signup() {
 }
 function Protected({
   profile,
+  adminOnly = false,
   children,
 }: {
   profile: Profile | null
+  adminOnly?: boolean
   children: ReactNode
 }) {
-  return profile ? children : <Navigate to="/login" replace />
+  if (!profile?.active) return <Navigate to="/login" replace />
+  if (adminOnly && profile.role !== 'admin')
+    return <Navigate to="/dashboard" replace />
+  return children
 }
-function CRM({ profile, children }: { profile: Profile; children: ReactNode }) {
+const CRM_LINKS: Array<{
+  to: string
+  label: string
+  short?: string
+  adminOnly?: boolean
+  end?: boolean
+}> = [
+  { to: '/dashboard', label: 'Overview' },
+  { to: '/crm/leads', label: 'Leads' },
+  { to: '/crm/customers', label: 'Customers' },
+  { to: '/crm/follow-ups', label: 'Follow-ups', short: 'Tasks' },
+  { to: '/crm/site-visits', label: 'Site visits', short: 'Visits' },
+  { to: '/crm/notifications', label: 'Notifications', short: 'Inbox' },
+  { to: '/crm/properties', label: 'Properties', end: true },
+  { to: '/crm/properties/new', label: 'Add listing' },
+  { to: '/crm/enquiries', label: 'Enquiries' },
+  { to: '/crm/agents', label: 'Agents', adminOnly: true },
+]
+function CRM({
+  profile,
+  onSignOut,
+  children,
+}: {
+  profile: Profile
+  onSignOut: () => void
+  children: ReactNode
+}) {
   const nav = useNavigate()
+  const content = useRef<HTMLElement>(null)
+  // Column labels for the stacked phone layout of every CRM table.
+  useEffect(() => {
+    if (content.current) return watchTableLabels(content.current)
+  }, [])
+  const links = CRM_LINKS.filter(
+    (link) => !link.adminOnly || profile.role === 'admin',
+  )
+  const logout = () =>
+    signOut().then(() => {
+      onSignOut()
+      nav('/login')
+    })
   return (
     <div className="crm">
       <aside>
@@ -783,19 +847,12 @@ function CRM({ profile, children }: { profile: Profile; children: ReactNode }) {
           <i>H</i> Haven & Key
         </Link>
         <small>WORKSPACE</small>
-        <Link to="/dashboard">Overview</Link>
-        <Link to="/crm/leads">Leads</Link>
-        <Link to="/crm/customers">Customers</Link>
-        <Link to="/crm/follow-ups">Follow-ups</Link>
-        <Link to="/crm/site-visits">Site visits</Link>
-        <Link to="/crm/notifications">Notifications</Link>
-        <Link to="/crm/properties">Properties</Link>
-        <Link to="/crm/properties/new">Add listing</Link>
-        <Link to="/crm/enquiries">Enquiries</Link>
-        <Link to="/crm/agents">Agents</Link>
-        <button onClick={() => signOut().then(() => nav('/login'))}>
-          Sign out
-        </button>
+        {links.map((link) => (
+          <NavLink key={link.to} to={link.to} end={link.end}>
+            {link.label}
+          </NavLink>
+        ))}
+        <button onClick={logout}>Sign out</button>
         <p>
           {profile.full_name}
           <small>{profile.role}</small>
@@ -805,17 +862,14 @@ function CRM({ profile, children }: { profile: Profile; children: ReactNode }) {
         <Link className="brand" to="/">
           <i>H</i> H&K
         </Link>
-        <Link to="/dashboard">Overview</Link>
-        <Link to="/crm/leads">Leads</Link>
-        <Link to="/crm/customers">Customers</Link>
-        <Link to="/crm/follow-ups">Tasks</Link>
-        <Link to="/crm/site-visits">Visits</Link>
-        <Link to="/crm/notifications">Inbox</Link>
-        <button onClick={() => signOut().then(() => nav('/login'))}>
-          Logout
-        </button>
+        {links.map((link) => (
+          <NavLink key={link.to} to={link.to} end={link.end}>
+            {link.short ?? link.label}
+          </NavLink>
+        ))}
+        <button onClick={logout}>Logout</button>
       </div>
-      <section>{children}</section>
+      <section ref={content}>{children}</section>
     </div>
   )
 }
@@ -872,6 +926,26 @@ function Dashboard() {
           title="Upcoming visits"
           value={String(stats?.upcomingSiteVisits ?? '—')}
         />
+        <Stat
+          title="Follow-ups due today"
+          value={String(stats?.todayFollowUps ?? '—')}
+          to="/crm/follow-ups?view=today"
+        />
+        <Stat
+          title="Overdue follow-ups"
+          value={String(stats?.overdueFollowUps ?? '—')}
+          to="/crm/follow-ups?view=overdue"
+        />
+        <Stat
+          title="Converted leads"
+          value={String(stats?.convertedLeads ?? '—')}
+          to="/crm/leads?status=converted"
+        />
+        <Stat
+          title="Draft listings"
+          value={String(stats?.draftProperties ?? '—')}
+          to="/crm/properties?status=draft"
+        />
       </div>
       <div className="panel-stack">
         <div className="panel">
@@ -894,72 +968,27 @@ function Dashboard() {
     </>
   )
 }
-function Stat({ title, value }: { title: string; value: string }) {
-  return (
-    <div className="stat">
+function Stat({
+  title,
+  value,
+  to,
+}: {
+  title: string
+  value: string
+  to?: string
+}) {
+  const body = (
+    <>
       <p>{title}</p>
       <strong>{value}</strong>
-    </div>
-  )
-}
-function Properties() {
-  const [items, setItems] = useState<
-      Awaited<ReturnType<typeof listStaffProperties>>['data']
-    >([]),
-    [error, setError] = useState('')
-  useEffect(() => {
-    listStaffProperties({ page: 1, pageSize: 50 })
-      .then((x) => setItems(x.data))
-      .catch((e) => setError(getErrorMessage(e)))
-  }, [])
-  return (
-    <>
-      <div className="crm-head">
-        <div>
-          <p className="eyebrow">Portfolio</p>
-          <h1>Properties</h1>
-        </div>
-        <Link to="/crm/properties/new">
-          <Button>Add property</Button>
-        </Link>
-      </div>
-      {error ? (
-        <Notice text={error} />
-      ) : (
-        <div className="table">
-          <table>
-            <thead>
-              <tr>
-                <th>Property</th>
-                <th>Location</th>
-                <th>Status</th>
-                <th>Price</th>
-              </tr>
-            </thead>
-            <tbody>
-              {items.map((x) => (
-                <tr key={x.id}>
-                  <td>
-                    <b>
-                      <Link to={`/crm/properties/${x.id}/edit`}>{x.title}</Link>
-                    </b>
-                    <small>{titleCase(x.property_type)}</small>
-                  </td>
-                  <td>
-                    {x.city}, {x.region}
-                  </td>
-                  <td>
-                    <span className={x.status}>{x.status}</span>
-                  </td>
-                  <td>{formatCurrency(x.price, x.currency)}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-          {!items.length && <Empty title="No properties yet" />}
-        </div>
-      )}
     </>
+  )
+  return to ? (
+    <Link className="stat stat-link" to={to}>
+      {body}
+    </Link>
+  ) : (
+    <div className="stat">{body}</div>
   )
 }
 function EditRoute({ profile }: { profile: Profile }) {
@@ -968,105 +997,6 @@ function EditRoute({ profile }: { profile: Profile }) {
     <PropertyEditor id={id} profile={profile} />
   ) : (
     <Empty title="Property not found" />
-  )
-}
-function NewProperty({ profile }: { profile: Profile }) {
-  const nav = useNavigate(),
-    [error, setError] = useState(''),
-    [loading, setLoading] = useState(false)
-  function submit(e: FormEvent<HTMLFormElement>) {
-    e.preventDefault()
-    const f = new FormData(e.currentTarget),
-      title = String(f.get('title'))
-    setLoading(true)
-    createProperty({
-      title,
-      slug: slugify(title),
-      description: String(f.get('description')),
-      property_type: String(f.get('property_type')) as never,
-      listing_type: String(f.get('listing_type')) as never,
-      price: Number(f.get('price')),
-      address_line_1: String(f.get('address')),
-      city: String(f.get('city')),
-      region: String(f.get('region')),
-      bedrooms: Number(f.get('bedrooms') || 0),
-      bathrooms: Number(f.get('bathrooms') || 0),
-      created_by: profile.id,
-      agent_id: profile.id,
-    })
-      .then(() => nav('/crm/properties'))
-      .catch((e) => setError(getErrorMessage(e)))
-      .finally(() => setLoading(false))
-  }
-  return (
-    <>
-      <div className="crm-head">
-        <div>
-          <p className="eyebrow">Portfolio</p>
-          <h1>Add a property</h1>
-        </div>
-      </div>
-      <form className="property-form" onSubmit={submit}>
-        <label>
-          Property title
-          <input required name="title" />
-        </label>
-        <label>
-          Description
-          <textarea required name="description" />
-        </label>
-        <div>
-          <label>
-            Property type
-            <select name="property_type">
-              {PROPERTY_TYPES.map((x) => (
-                <option key={x.value} value={x.value}>
-                  {x.label}
-                </option>
-              ))}
-            </select>
-          </label>
-          <label>
-            Listing type
-            <select name="listing_type">
-              {LISTING_TYPES.map((x) => (
-                <option key={x.value} value={x.value}>
-                  {x.label}
-                </option>
-              ))}
-            </select>
-          </label>
-          <label>
-            Price
-            <input required name="price" type="number" min="0" />
-          </label>
-          <label>
-            Bedrooms
-            <input name="bedrooms" type="number" min="0" defaultValue="0" />
-          </label>
-          <label>
-            Bathrooms
-            <input name="bathrooms" type="number" min="0" defaultValue="0" />
-          </label>
-          <label>
-            Address
-            <input required name="address" />
-          </label>
-          <label>
-            City
-            <input required name="city" />
-          </label>
-          <label>
-            State / region
-            <input required name="region" />
-          </label>
-        </div>
-        {error && <p className="error">{error}</p>}
-        <Button type="submit" loading={loading}>
-          Create draft property
-        </Button>
-      </form>
-    </>
   )
 }
 function Loading() {

@@ -4,11 +4,12 @@ A Vite + React + TypeScript + Tailwind single-page application for listing and
 managing residential properties, backed by Supabase (Postgres, Auth, Storage,
 Realtime, and Edge Functions).
 
-**Status:** greenfield. This repository contains the frontend scaffold, the
-Supabase configuration, and the declared TypeScript types for the backend.
-The database schema, Row Level Security policies, Edge Functions, and seed
-data are not yet implemented. See [docs/architecture.md](docs/architecture.md)
-for the current gap between declared types and deployed SQL.
+**Status:** Milestones 1–5 delivered: public site, CRM (leads, customers,
+follow-ups, site visits, notifications), property assistant chatbot, and the
+advanced CRM & property management release. Schema, RLS, triggers and the
+invite-agent Edge Function live in `supabase/`. See
+[docs/milestone-5.md](docs/milestone-5.md) for the latest release and its
+deployment steps.
 
 ## Features
 
@@ -20,6 +21,12 @@ for the current gap between declared types and deployed SQL.
 - Property assistant chatbot on public pages: rule-based natural-language
   search, answers from live listing data and in-chat enquiries (no external
   API; see [docs/chatbot.md](docs/chatbot.md))
+- Advanced CRM: lead pipeline board, lead and customer detail pages with
+  notes and timelines, follow-up / site-visit scheduling, property matching
+  for customers, balanced lead assignment, admin approval of new staff
+  accounts (see [docs/milestone-5.md](docs/milestone-5.md))
+- Property management: full listing details, drag-and-drop gallery order,
+  bulk publish / archive, duplicate and restore
 - Accessible, semantic markup (Oxlint + Prettier + Playwright axe checks)
 
 ## Tech stack

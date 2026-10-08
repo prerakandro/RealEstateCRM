@@ -1,4 +1,11 @@
 @import 'tailwindcss';
+/* Brand scale used by components/ui/Button (moss green, matches --moss). */
+@theme {
+  --color-brand-50: #eef4ef;
+  --color-brand-400: #6f9a7f;
+  --color-brand-600: #345845;
+  --color-brand-700: #263f32;
+}
 * {
   box-sizing: border-box;
 }

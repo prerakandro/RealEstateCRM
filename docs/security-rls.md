@@ -1,8 +1,13 @@
 # Security and RLS model
 
-This document defines the authorization model for the CRM. It is a
-specification for SQL that does not yet exist — see
-[docs/architecture.md](docs/architecture.md) for the current gap list.
+This document describes the authorization model for the CRM. The policies
+themselves live in `supabase/migrations/`.
+
+**Staff = an active profile.** `is_staff()` checks `profiles.active`. Since
+Milestone 5, self sign-ups are created inactive and must be activated by an
+admin in Agents; the first account on an empty project becomes the admin;
+invited users are activated by the invite-agent function. See
+[milestone-5.md](milestone-5.md).
 
 ## Roles
 

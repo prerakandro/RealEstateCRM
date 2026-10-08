@@ -69,29 +69,21 @@ Supabase Realtime is enabled in `supabase/config.toml`
 `property_images` and `properties` changes so a listing edited by a colleague
 appears without a refresh.
 
-## Where the backend is NOT yet implemented
+## Backend in this repository
 
-This is the honest gap list. The frontend calls the APIs below; none of them
-exist as SQL yet.
+The schema, RLS policies, RPCs, triggers and storage bucket are defined in
+`supabase/migrations/` (milestones 1, 2, 4 and 5 plus a reconciliation
+migration for the hosted project). `supabase/functions/invite-agent` sends
+staff invitations. `src/types/database.generated.ts` is still maintained by
+hand and must be updated with each migration (or regenerated with
+`npm run supabase:types`).
 
-- **No migrations.** `supabase/config.toml` sets `schema_paths = []`, so
-  `supabase db push` applies nothing. There is no `supabase/migrations/`
-  directory, no `schema.sql`, and no `seed.sql` (the seed path is declared
-  but the file is missing).
-- **No RLS.** No `create policy` statements exist for any table. Until they
-  are written, the anon key can read and write everything.
-- **No RPC implementations.** `search_properties`, the image reservation and
-  ordering RPCs, and the lifecycle RPCs are declared in TypeScript only.
-- **No first-admin bootstrap.** There is no trigger on `auth.users`, no
-  `before_user_created` hook, and no seed that creates an admin profile.
-- **No Edge Functions.** There is no `supabase/functions/` directory, so the
-  invite-agent function does not exist.
-- **No storage bucket.** The client uses the `property-images` bucket
-  unconditionally; it is not declared in config or SQL.
+Remaining gaps: there is no `seed.sql` and no pgTAP tests in
+`supabase/tests/`.
 
-Until these exist, `npm run supabase:reset` produces an empty database and
-every frontend call fails with a relation-does-not-exist error. Treat the
-declared types as the target schema, not the current one.
+CRM tables added in Milestone 2 and 5: `customers`, `leads`, `follow_ups`,
+`site_visits`, `activities`, `notifications`, `crm_notes`. See
+[milestone-5.md](milestone-5.md) for the triggers that keep them consistent.
 
 ## Design notes
 

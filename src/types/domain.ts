@@ -56,6 +56,7 @@ export type SiteVisitInsert =
   Database['public']['Tables']['site_visits']['Insert']
 export type Activity = Database['public']['Tables']['activities']['Row']
 export type Notification = Database['public']['Tables']['notifications']['Row']
+export type CrmNote = Database['public']['Tables']['crm_notes']['Row']
 
 export interface PropertyWithRelations extends Property {
   property_images: PropertyImage[]

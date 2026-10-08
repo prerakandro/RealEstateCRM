@@ -235,6 +235,12 @@ export interface Database {
         Update: { is_read?: boolean }
         Relationships: []
       }
+      crm_notes: {
+        Row: { id: string; customer_id: string; lead_id: string | null; body: string; created_by: string | null; created_at: string }
+        Insert: Partial<Database['public']['Tables']['crm_notes']['Row']> & { customer_id: string; body: string }
+        Update: never
+        Relationships: []
+      }
     }
     Views: Record<never, never>
     Functions: {

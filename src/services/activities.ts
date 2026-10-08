@@ -26,6 +26,30 @@ export async function listActivities(
   return data ?? []
 }
 
+/**
+ * History for one lead or customer: events on the record itself plus events
+ * on follow-ups / site visits that link to it through metadata.
+ */
+export async function listTimeline(
+  target: { leadId: string } | { customerId: string },
+  limit = 50,
+): Promise<Activity[]> {
+  const [entityType, key, id] =
+    'leadId' in target
+      ? ['lead', 'lead_id', target.leadId]
+      : ['customer', 'customer_id', target.customerId]
+  const { data, error } = await supabase
+    .from('activities')
+    .select('*')
+    .or(
+      `and(entity_type.eq.${entityType},entity_id.eq.${id}),metadata->>${key}.eq.${id}`,
+    )
+    .order('created_at', { ascending: false })
+    .limit(limit)
+  throwIfError(error, 'Activity history could not be loaded.')
+  return data ?? []
+}
+
 export async function recordActivity(
   entityType: string,
   entityId: string,

@@ -16,6 +16,17 @@ export interface LeadFilters {
   priority?: LeadPriority
   source?: LeadSource
   assignedAgentId?: string
+  customerId?: string
+  propertyId?: string
+  /** Only leads that are still being worked (not converted/lost/closed). */
+  openOnly?: boolean
+  /** ISO date (inclusive) / ISO date (exclusive) bounds on created_at. */
+  createdFrom?: string
+  createdTo?: string
+  minBudget?: number
+  maxBudget?: number
+  /** overdue: next follow-up in the past; none: no pending follow-up. */
+  followUp?: 'overdue' | 'none'
   page: number
   pageSize: number
 }
@@ -34,6 +45,19 @@ export async function listLeads(
   if (filters.source) query = query.eq('source', filters.source)
   if (filters.assignedAgentId)
     query = query.eq('assigned_agent_id', filters.assignedAgentId)
+  if (filters.customerId) query = query.eq('customer_id', filters.customerId)
+  if (filters.propertyId) query = query.eq('property_id', filters.propertyId)
+  if (filters.openOnly)
+    query = query.not('status', 'in', '(converted,lost,closed)')
+  if (filters.createdFrom) query = query.gte('created_at', filters.createdFrom)
+  if (filters.createdTo) query = query.lt('created_at', filters.createdTo)
+  if (filters.minBudget !== undefined)
+    query = query.gte('expected_budget', filters.minBudget)
+  if (filters.maxBudget !== undefined)
+    query = query.lte('expected_budget', filters.maxBudget)
+  if (filters.followUp === 'overdue')
+    query = query.lt('next_follow_up_at', new Date().toISOString())
+  if (filters.followUp === 'none') query = query.is('next_follow_up_at', null)
   if (filters.query) query = query.ilike('title', `%${filters.query}%`)
   const { data, error, count } = await query
   throwIfError(error, 'Leads could not be loaded.')
@@ -71,6 +95,7 @@ export async function createLead(input: LeadInsert): Promise<Lead> {
     data.id,
     'lead_created',
     `Lead created: ${data.title}`,
+    { lead_id: data.id, customer_id: data.customer_id },
   )
   return data
 }
@@ -98,8 +123,10 @@ export async function updateLead(
     'lead',
     data.id,
     input.status ? 'lead_status_changed' : 'lead_updated',
-    input.status ? `Lead moved to ${input.status}` : 'Lead details updated',
-    { status: data.status },
+    input.status
+      ? `Lead moved to ${input.status.replaceAll('_', ' ')}`
+      : 'Lead details updated',
+    { status: data.status, lead_id: data.id, customer_id: data.customer_id },
   )
   return data
 }

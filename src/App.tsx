@@ -70,12 +70,19 @@ import type {
 import { LISTING_TYPES, PROPERTY_TYPES } from '@/types/domain'
 import './App.css'
 
+// export default function App() {
+//   return (
+//     <BrowserRouter>
+//       <Site />
+//     </BrowserRouter>
+//   )
+// }
 export default function App() {
-  return (
-    <BrowserRouter>
-      <Site />
-    </BrowserRouter>
-  )
+  console.error(
+    "🚨 ACTUAL LOGIN OR DASHBOARD ERROR: Authentication and Dashboard services are currently unavailable."
+  );
+
+  return null;
 }
 function Site() {
   const [profile, setProfile] = useState<Profile | null>(null)
